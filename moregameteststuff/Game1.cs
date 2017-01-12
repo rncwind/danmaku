@@ -46,6 +46,10 @@ namespace moregameteststuff
             public Texture2D texture;
             public Vector2 Position;
             public int health;
+            public enemy1(ContentManager content)
+            {
+
+            }
         }
 
         //moves the bullet
