@@ -13,6 +13,7 @@ namespace moregameteststuff
     /// </summary>
     public class Game1 : Game
     {
+        
         List<bullet> bulletList = new List<bullet>();
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -46,9 +47,9 @@ namespace moregameteststuff
             public Texture2D texture;
             public Vector2 Position;
             public int health;
-            public enemy1(ContentManager content)
+            public enemy1(Microsoft.Xna.Framework.Content.ContentManager game)
             {
-
+                game.Load<Texture2D>("Sprites/honk.jpg");
             }
         }
 
