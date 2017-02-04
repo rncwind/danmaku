@@ -13,17 +13,19 @@ namespace moregameteststuff
     /// </summary>
     public class Game1 : Game
     {
-        
-        List<bullet> bulletList = new List<bullet>();
+        public int bulletcounter = 0;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        public List<enemy1> enemy1list = new List<enemy1>();
+        public List<bullet> bulletlist = new List<bullet>();
+        KeyboardState oldstate;
         public bullet genericbullet = new bullet();
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
+            graphics.PreferredBackBufferWidth = 720;
+            graphics.PreferredBackBufferHeight = 1000;
         }
 
         //class for all bullets
@@ -47,24 +49,44 @@ namespace moregameteststuff
             public Texture2D texture;
             public Vector2 Position;
             public int health;
-            public enemy1(Microsoft.Xna.Framework.Content.ContentManager game)
+        }
+
+        public void spawnenemy()
+        {
+            Random rnd = new Random();
+                enemy1list.Add(new enemy1());
+                enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
+                enemy1list[enemy1list.Count - 1].Position.X = rnd.Next(130, 360);
+                enemy1list[enemy1list.Count - 1].Position.Y = 0;
+                enemy1list[enemy1list.Count - 1].health = 50;
+        }
+
+
+        public void initbullets()
+        {
+            int i = 0;
+            for (i = 0; i < bulletlist.Count; i++)
             {
-                game.Load<Texture2D>("Sprites/honk.jpg");
+                bulletlist[i] = genericbullet = new bullet();
+                bulletlist[i].bullettex = Content.Load<Texture2D>("Sprites/bullet");
+                bulletlist[i].bulletpos.X = 0;
+                bulletlist[i].bulletpos.Y = 0;
             }
         }
+
+
+
 
         //moves the bullet
         public void fire() {
-            bullet newbullet = new bullet();
-            newbullet.bulletpos = player.position;
-            if (bulletList.Count < 20)
-            {
-                bulletList.Add(newbullet);
-            }
+            bulletlist.Add(new bullet());
+            bulletlist[bulletlist.Count -1].bulletpos.Y = player.position.Y;
+            bulletlist[bulletlist.Count -1].bulletpos.X = player.position.X;
+            bulletlist[bulletlist.Count - 1].bullettex = Content.Load<Texture2D>("Sprites/bullet");
         }
 
         //controlls and stuff
-        void move() {
+        void move(GameTime gameTime) {
             // i love polling
             KeyboardState state = Keyboard.GetState();
 
@@ -87,10 +109,21 @@ namespace moregameteststuff
             {
                 player.position.Y += 5;
             }
-            if (state.IsKeyDown(Keys.Space))
+            if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
                 fire();
             }
+            //test
+            //the following inputs are debug commands for testing
+            if (state.IsKeyDown(Keys.NumPad0))
+            {
+                spawnenemy();
+            }
+            if (state.IsKeyDown(Keys.H))
+            {
+                player.lives = player.lives - 1;
+            }
+            bullettrash();
         }
 
         //bounds checking so the player cant leave the screen
@@ -114,20 +147,27 @@ namespace moregameteststuff
             }
         }
 
+        public void bullettrash()
+        {
+            foreach (bullet bullet in bulletlist.ToArray())
+            {
+                for (int i = 0; i < bulletlist.Count; i++)
+                {
+                    if (bulletlist[i].bulletpos.Y < -600)
+                    {
+                        bulletlist.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
         public void movebullet()
         {
-            foreach (bullet newbullet in bulletList)
+           foreach (bullet bullet in bulletlist)
             {
-                newbullet.bulletpos.Y += 10;
-                if (Vector2.Distance(newbullet.bulletpos, player.position) > 100)
-                    newbullet.isVisible = false;
-            }
-            for (int i = 0; i < bulletList.Count; i++)
-            {
-                if(!bulletList[i].isVisible)
+                for (int i = 0; i < bulletlist.Count; i++)
                 {
-                    bulletList.RemoveAt(i);
-                    i--;
+                    bulletlist[i].bulletpos.Y -= 10;
                 }
             }
         }
@@ -150,7 +190,12 @@ namespace moregameteststuff
             // TODO: Add your initialization logic here
             
             base.Initialize();
-            player.position = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2 - 100, graphics.GraphicsDevice.Viewport.Height / 2 - 75);
+            enemy1list.Add(new enemy1());
+            enemy1list[enemy1list.Count -1].texture = Content.Load<Texture2D>("Sprites/honk");
+            bulletlist.Add(new bullet());
+            bulletlist[bulletlist.Count -1].bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            player.position = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
+            oldstate = Keyboard.GetState();
         }
 
         
@@ -182,9 +227,11 @@ namespace moregameteststuff
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            move();
+            move(gameTime);
             checkbounds();
             movebullet();
+            //bullettrash();
+            Draw(gameTime);
             base.Update(gameTime);
         }
 
@@ -196,7 +243,23 @@ namespace moregameteststuff
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             spriteBatch.Begin();
+            //initbullets();
             spriteBatch.Draw(player.texture, player.position);
+            spriteBatch.Draw(enemy1list[0].texture, enemy1list[0].Position);
+            foreach (bullet bullet in bulletlist)
+            {
+                for (int i=0; i < bulletlist.Count; i++)
+                {
+                    spriteBatch.Draw(bulletlist[i].bullettex, bulletlist[i].bulletpos);
+                }
+            }
+            foreach (enemy1 enemy1 in enemy1list)
+            {
+                for (int i=0; i < enemy1list.Count; i++)
+                {
+                    spriteBatch.Draw(enemy1list[i].texture, enemy1list[i].Position);
+                }
+            }
             spriteBatch.End();
             base.Draw(gameTime);
         }
