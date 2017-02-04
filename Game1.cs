@@ -28,8 +28,21 @@ namespace moregameteststuff
             graphics.PreferredBackBufferHeight = 1000;
         }
 
+        public class gameobject
+        {
+            public Texture2D texture;
+            public Vector2 position;
+            public Rectangle hitbox
+            {
+                get
+                {
+                    return new Rectangle((int)position.X, (int)position.Y, texture.Width, texture.Height);
+                }
+            }
+        }
+
         //class for all bullets
-        public class bullet
+        public class bullet : gameobject
         {
             public Texture2D bullettex;
             public Vector2 bulletpos;
@@ -37,17 +50,13 @@ namespace moregameteststuff
         }
 
         //class for the player ship
-        public class ship
+        public class ship : gameobject
         {
-            public Texture2D texture;
-            public Vector2 position;
             public int lives = 3;
         }
 
-        public class enemy1
+        public class enemy1 : gameobject
         {
-            public Texture2D texture;
-            public Vector2 Position;
             public int health;
         }
 
@@ -56,8 +65,8 @@ namespace moregameteststuff
             Random rnd = new Random();
                 enemy1list.Add(new enemy1());
                 enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
-                enemy1list[enemy1list.Count - 1].Position.X = rnd.Next(130, 360);
-                enemy1list[enemy1list.Count - 1].Position.Y = 0;
+                enemy1list[enemy1list.Count - 1].position.X = rnd.Next(130, 360);
+                enemy1list[enemy1list.Count - 1].position.Y = 0;
                 enemy1list[enemy1list.Count - 1].health = 50;
         }
 
@@ -78,11 +87,11 @@ namespace moregameteststuff
 
 
         //moves the bullet
-        public void fire() {
-            bulletlist.Add(new bullet());
-            bulletlist[bulletlist.Count -1].bulletpos.Y = player.position.Y;
-            bulletlist[bulletlist.Count -1].bulletpos.X = player.position.X;
-            bulletlist[bulletlist.Count - 1].bullettex = Content.Load<Texture2D>("Sprites/bullet");
+        public void fire(GameTime gameTime) {
+                    bulletlist.Add(new bullet());
+                    bulletlist[bulletlist.Count - 1].bulletpos.Y = player.position.Y;
+                    bulletlist[bulletlist.Count - 1].bulletpos.X = player.position.X;
+                    bulletlist[bulletlist.Count - 1].bullettex = Content.Load<Texture2D>("Sprites/bullet");
         }
 
         //controlls and stuff
@@ -111,7 +120,7 @@ namespace moregameteststuff
             }
             if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
-                fire();
+                fire(gameTime);
             }
             //test
             //the following inputs are debug commands for testing
@@ -245,7 +254,7 @@ namespace moregameteststuff
             spriteBatch.Begin();
             //initbullets();
             spriteBatch.Draw(player.texture, player.position);
-            spriteBatch.Draw(enemy1list[0].texture, enemy1list[0].Position);
+            spriteBatch.Draw(enemy1list[0].texture, enemy1list[0].position);
             foreach (bullet bullet in bulletlist)
             {
                 for (int i=0; i < bulletlist.Count; i++)
@@ -257,7 +266,7 @@ namespace moregameteststuff
             {
                 for (int i=0; i < enemy1list.Count; i++)
                 {
-                    spriteBatch.Draw(enemy1list[i].texture, enemy1list[i].Position);
+                    spriteBatch.Draw(enemy1list[i].texture, enemy1list[i].position);
                 }
             }
             spriteBatch.End();
