@@ -13,12 +13,16 @@ namespace moregameteststuff
     /// </summary>
     public class Game1 : Game
     {
+        public ship player = new ship(); //creates the player
         public int bulletcounter = 0;
+        public byte currentgun = 0;
+        public int firerate = 0;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
         KeyboardState oldstate;
+        public double timesinceshot;
         public bullet genericbullet = new bullet();
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
@@ -44,9 +48,7 @@ namespace moregameteststuff
         //class for all bullets
         public class bullet : gameobject
         {
-            public Texture2D bullettex;
-            public Vector2 bulletpos;
-            public bool isVisible;
+            //wow, this class is boring lol
         }
 
         //class for the player ship
@@ -57,7 +59,7 @@ namespace moregameteststuff
 
         public class enemy1 : gameobject
         {
-            public int health;
+            public int health = 20;
         }
 
         public void spawnenemy()
@@ -65,7 +67,7 @@ namespace moregameteststuff
             Random rnd = new Random();
                 enemy1list.Add(new enemy1());
                 enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
-                enemy1list[enemy1list.Count - 1].position.X = rnd.Next(130, 360);
+                enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, 360);
                 enemy1list[enemy1list.Count - 1].position.Y = 0;
                 enemy1list[enemy1list.Count - 1].health = 50;
         }
@@ -74,12 +76,11 @@ namespace moregameteststuff
         public void initbullets()
         {
             int i = 0;
-            for (i = 0; i < bulletlist.Count; i++)
-            {
+            for (i = 0; i < bulletlist.Count; i++) {
                 bulletlist[i] = genericbullet = new bullet();
-                bulletlist[i].bullettex = Content.Load<Texture2D>("Sprites/bullet");
-                bulletlist[i].bulletpos.X = 0;
-                bulletlist[i].bulletpos.Y = 0;
+                bulletlist[i].texture = Content.Load<Texture2D>("Sprites/bullet");
+                bulletlist[i].position.X = 0;
+                bulletlist[i].position.Y = 0;
             }
         }
 
@@ -88,10 +89,10 @@ namespace moregameteststuff
 
         //moves the bullet
         public void fire(GameTime gameTime) {
-                    bulletlist.Add(new bullet());
-                    bulletlist[bulletlist.Count - 1].bulletpos.Y = player.position.Y;
-                    bulletlist[bulletlist.Count - 1].bulletpos.X = player.position.X;
-                    bulletlist[bulletlist.Count - 1].bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            bulletlist.Add(new bullet());
+            bulletlist[bulletlist.Count - 1].position.Y = player.position.Y;
+            bulletlist[bulletlist.Count - 1].position.X = player.position.X;
+            bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
         }
 
         //controlls and stuff
@@ -118,21 +119,30 @@ namespace moregameteststuff
             {
                 player.position.Y += 5;
             }
+            
             if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
-                fire(gameTime);
+                if (timesinceshot > firerate)
+                {
+                    fire(gameTime);
+                    timesinceshot = 0;
+                }
             }
-            //test
+            bullettrash();
+
             //the following inputs are debug commands for testing
-            if (state.IsKeyDown(Keys.NumPad0))
+            if (state.IsKeyDown(Keys.NumPad0)) //spawns new enemy
             {
                 spawnenemy();
             }
-            if (state.IsKeyDown(Keys.H))
+            if (state.IsKeyDown(Keys.H)) //removes life from player
             {
                 player.lives = player.lives - 1;
             }
-            bullettrash();
+            if (state.IsKeyDown(Keys.C)) //debug cheat rapid fire key
+            {
+                timesinceshot = (firerate + 1);
+            }
         }
 
         //bounds checking so the player cant leave the screen
@@ -162,7 +172,7 @@ namespace moregameteststuff
             {
                 for (int i = 0; i < bulletlist.Count; i++)
                 {
-                    if (bulletlist[i].bulletpos.Y < -600)
+                    if (bulletlist[i].position.Y < -600)
                     {
                         bulletlist.RemoveAt(i);
                     }
@@ -176,8 +186,16 @@ namespace moregameteststuff
             {
                 for (int i = 0; i < bulletlist.Count; i++)
                 {
-                    bulletlist[i].bulletpos.Y -= 10;
+                    bulletlist[i].position.Y -= 10;
                 }
+            }
+        }
+
+        public void checkweapon()
+        {
+            if (currentgun == 0)
+            {
+                firerate = 250;
             }
         }
 
@@ -189,65 +207,46 @@ namespace moregameteststuff
         /// and initialize them as well.
         /// </summary>
         /// 
-        
-
-
-        public ship player = new ship(); //creates the player
-
         protected override void Initialize()
-        {
-            // TODO: Add your initialization logic here
-            
+        {            
             base.Initialize();
             enemy1list.Add(new enemy1());
             enemy1list[enemy1list.Count -1].texture = Content.Load<Texture2D>("Sprites/honk");
             bulletlist.Add(new bullet());
-            bulletlist[bulletlist.Count -1].bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            bulletlist[bulletlist.Count -1].texture = Content.Load<Texture2D>("Sprites/bullet");
             player.position = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
             oldstate = Keyboard.GetState();
         }
 
-        
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        protected override void LoadContent()
+        /// Loads game content
+        protected override void LoadContent() //personally i found this override kind of useless as texturing on the fly was easier
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             player.texture = Content.Load<Texture2D>("Sprites/ikaruga");
             
         }
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// game-specific content.
-        /// </summary>
+
+        /// UnloadContent will be called once per game and is the place to unload game-specific content.
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
             Content.Unload();
         }
 
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// Allows the game to run logic such as updating the world, checking for collisions, gathering input, and playing audio.
         protected override void Update(GameTime gameTime)
         {
             move(gameTime);
             checkbounds();
             movebullet();
-            //bullettrash();
+            checkweapon();
+            timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
             Draw(gameTime);
             base.Update(gameTime);
         }
 
-        /// <summary>
         /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -259,7 +258,7 @@ namespace moregameteststuff
             {
                 for (int i=0; i < bulletlist.Count; i++)
                 {
-                    spriteBatch.Draw(bulletlist[i].bullettex, bulletlist[i].bulletpos);
+                    spriteBatch.Draw(bulletlist[i].texture, bulletlist[i].position);
                 }
             }
             foreach (enemy1 enemy1 in enemy1list)
@@ -273,4 +272,9 @@ namespace moregameteststuff
             base.Draw(gameTime);
         }
     }
+    /*Blizzard "Bugs" (they are features i swear)
+    * bullet velocity increases as bullets are on the screen. i kind of like this as it allows for "inverse slowdown" for more skillful players
+    * 
+    */
 }
+
