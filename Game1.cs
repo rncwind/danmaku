@@ -44,6 +44,12 @@ namespace moregameteststuff
                     return new Rectangle((int)position.X, (int)position.Y, texture.Width, texture.Height);
                 }
             }
+            public void Draw(SpriteBatch spriteBatch)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(texture, position);
+                spriteBatch.End();
+            }
         }
 
         //class for all bullets
@@ -74,11 +80,12 @@ namespace moregameteststuff
         public void spawnenemy()
         {
             Random rnd = new Random();
-                enemy1list.Add(new enemy1());
-                enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
-                enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, 360);
-                enemy1list[enemy1list.Count - 1].position.Y = 0;
-                enemy1list[enemy1list.Count - 1].health = 50;
+            enemy1list.Add(new enemy1());
+            enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
+            enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, 360);
+            enemy1list[enemy1list.Count - 1].position.Y = 0;
+            enemy1list[enemy1list.Count - 1].health = 50;
+            enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
         }
 
 
@@ -251,25 +258,24 @@ namespace moregameteststuff
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            spriteBatch.Begin();
-            //initbullets();
-            spriteBatch.Draw(player.texture, player.position);
-            spriteBatch.Draw(enemy1list[0].texture, enemy1list[0].position);
+            player.Draw(spriteBatch);
+            enemy1list[0].Draw(spriteBatch);
             foreach (bullet bullet in bulletlist)
             {
-                for (int i=0; i < bulletlist.Count; i++)
+                for (int i = 0; i < bulletlist.Count; i++)
                 {
-                    spriteBatch.Draw(bulletlist[i].texture, bulletlist[i].position);
+                    bulletlist[i].Draw(spriteBatch);
                 }
             }
+
+            
             foreach (enemy1 enemy1 in enemy1list)
             {
                 for (int i=0; i < enemy1list.Count; i++)
                 {
-                    spriteBatch.Draw(enemy1list[i].texture, enemy1list[i].position);
+                    enemy1list[i].Draw(spriteBatch);
                 }
             }
-            spriteBatch.End();
             base.Draw(gameTime);
         }
 
