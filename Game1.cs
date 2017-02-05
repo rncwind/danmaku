@@ -24,6 +24,7 @@ namespace moregameteststuff
         KeyboardState oldstate;
         public double timesinceshot;
         public bullet genericbullet = new bullet();
+        public powerup currentweapon = new powerup();
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
             graphics = new GraphicsDeviceManager(this);
@@ -60,6 +61,14 @@ namespace moregameteststuff
         public class enemy1 : gameobject
         {
             public int health = 20;
+        }
+
+        public class powerup : gameobject
+        {
+            public int weaponvelocity = 10;
+            public int firerate = 250;
+            public int lifechange = 0;
+            public int damagebuff = 5;
         }
 
         public void spawnenemy()
@@ -122,7 +131,7 @@ namespace moregameteststuff
             
             if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
-                if (timesinceshot > firerate)
+                if (timesinceshot > currentweapon.firerate)
                 {
                     fire(gameTime);
                     timesinceshot = 0;
@@ -139,9 +148,9 @@ namespace moregameteststuff
             {
                 player.lives = player.lives - 1;
             }
-            if (state.IsKeyDown(Keys.C)) //debug cheat rapid fire key
+            if (state.IsKeyDown(Keys.NumPad1)) //debug cheat rapid fire key
             {
-                timesinceshot = (firerate + 1);
+                timesinceshot = (currentweapon.firerate + 1);
             }
         }
 
@@ -182,31 +191,19 @@ namespace moregameteststuff
 
         public void movebullet()
         {
-           foreach (bullet bullet in bulletlist)
+           foreach (bullet bullet in bulletlist.ToArray())
             {
                 for (int i = 0; i < bulletlist.Count; i++)
                 {
-                    bulletlist[i].position.Y -= 10;
+                    bulletlist[i].position.Y -= currentweapon.weaponvelocity;
                 }
             }
         }
 
-        public void checkweapon()
-        {
-            if (currentgun == 0)
-            {
-                firerate = 250;
-            }
-        }
 
+        /// init logic, monogame's default comments are big and boring.
+        /// Calling base.Initialize will enumerate through any components, and initialize them as well.
 
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
-        /// </summary>
-        /// 
         protected override void Initialize()
         {            
             base.Initialize();
@@ -240,9 +237,13 @@ namespace moregameteststuff
             move(gameTime);
             checkbounds();
             movebullet();
-            checkweapon();
             timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
             Draw(gameTime);
+
+            if (player.lives <= 0)
+            {
+                gameover();
+            }
             base.Update(gameTime);
         }
 
@@ -270,6 +271,12 @@ namespace moregameteststuff
             }
             spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        public void gameover()
+        {
+            Debug.WriteLine("Player lost");
+            Exit();
         }
     }
     /*Blizzard "Bugs" (they are features i swear)
