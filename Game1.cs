@@ -8,11 +8,9 @@ using System.Collections.Generic;
 
 namespace moregameteststuff
 {
-    /// <summary>
-    /// This is the main type for your game.
-    /// </summary>
     public class Game1 : Game
     {
+        public Microsoft.Xna.Framework.Content.ContentManager content;
         public ship player = new ship(); //creates the player
         public int bulletcounter = 0;
         public byte currentgun = 0;
@@ -35,6 +33,7 @@ namespace moregameteststuff
 
         public class gameobject
         {
+
             public Texture2D texture;
             public Vector2 position;
             public Rectangle hitbox
@@ -44,6 +43,7 @@ namespace moregameteststuff
                     return new Rectangle((int)position.X, (int)position.Y, texture.Width, texture.Height);
                 }
             }
+
             public void Draw(SpriteBatch spriteBatch)
             {
                 spriteBatch.Begin();
@@ -92,7 +92,8 @@ namespace moregameteststuff
         public void initbullets()
         {
             int i = 0;
-            for (i = 0; i < bulletlist.Count; i++) {
+            for (i = 0; i < bulletlist.Count; i++)
+            {
                 bulletlist[i] = genericbullet = new bullet();
                 bulletlist[i].texture = Content.Load<Texture2D>("Sprites/bullet");
                 bulletlist[i].position.X = 0;
@@ -104,7 +105,8 @@ namespace moregameteststuff
 
 
         //moves the bullet
-        public void fire(GameTime gameTime) {
+        public void fire(GameTime gameTime)
+        {
             bulletlist.Add(new bullet());
             bulletlist[bulletlist.Count - 1].position.Y = player.position.Y;
             bulletlist[bulletlist.Count - 1].position.X = player.position.X;
@@ -112,7 +114,8 @@ namespace moregameteststuff
         }
 
         //controlls and stuff
-        void move(GameTime gameTime) {
+        void move(GameTime gameTime)
+        {
             // i love polling
             KeyboardState state = Keyboard.GetState();
 
@@ -135,7 +138,7 @@ namespace moregameteststuff
             {
                 player.position.Y += 5;
             }
-            
+
             if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
                 if (timesinceshot > currentweapon.firerate)
@@ -162,7 +165,8 @@ namespace moregameteststuff
         }
 
         //bounds checking so the player cant leave the screen
-        public void checkbounds() {
+        public void checkbounds()
+        {
             if (player.position.X > Window.ClientBounds.Width - player.texture.Width)
             {
                 player.position.X = Window.ClientBounds.Width - player.texture.Width;
@@ -172,7 +176,7 @@ namespace moregameteststuff
                 player.position.Y = Window.ClientBounds.Height - player.texture.Height;
             }
 
-            if (player.position.X <0)
+            if (player.position.X < 0)
             {
                 player.position.X = 0;
             }
@@ -198,7 +202,7 @@ namespace moregameteststuff
 
         public void movebullet()
         {
-           foreach (bullet bullet in bulletlist.ToArray())
+            foreach (bullet bullet in bulletlist.ToArray())
             {
                 for (int i = 0; i < bulletlist.Count; i++)
                 {
@@ -212,12 +216,12 @@ namespace moregameteststuff
         /// Calling base.Initialize will enumerate through any components, and initialize them as well.
 
         protected override void Initialize()
-        {            
+        {
             base.Initialize();
             enemy1list.Add(new enemy1());
-            enemy1list[enemy1list.Count -1].texture = Content.Load<Texture2D>("Sprites/honk");
+            enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
             bulletlist.Add(new bullet());
-            bulletlist[bulletlist.Count -1].texture = Content.Load<Texture2D>("Sprites/bullet");
+            bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
             player.position = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
             oldstate = Keyboard.GetState();
         }
@@ -228,7 +232,7 @@ namespace moregameteststuff
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             player.texture = Content.Load<Texture2D>("Sprites/ikaruga");
-            
+
         }
 
         /// UnloadContent will be called once per game and is the place to unload game-specific content.
@@ -268,10 +272,10 @@ namespace moregameteststuff
                 }
             }
 
-            
+
             foreach (enemy1 enemy1 in enemy1list)
             {
-                for (int i=0; i < enemy1list.Count; i++)
+                for (int i = 0; i < enemy1list.Count; i++)
                 {
                     enemy1list[i].Draw(spriteBatch);
                 }
