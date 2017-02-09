@@ -19,9 +19,9 @@ namespace moregameteststuff
         SpriteBatch spriteBatch;
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
-        KeyboardState oldstate;
+        public KeyboardState oldstate;
         public double timesinceshot;
-        public bullet genericbullet = new bullet();
+        public bullet bullet = new bullet();
         public powerup currentweapon = new powerup();
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
@@ -31,78 +31,16 @@ namespace moregameteststuff
             graphics.PreferredBackBufferHeight = 1000;
         }
 
-        public class gameobject
-        {
-
-            public Texture2D texture;
-            public Vector2 position;
-            public Rectangle hitbox
-            {
-                get
-                {
-                    return new Rectangle((int)position.X, (int)position.Y, texture.Width, texture.Height);
-                }
-            }
-
-            public void Draw(SpriteBatch spriteBatch)
-            {
-                spriteBatch.Begin();
-                spriteBatch.Draw(texture, position);
-                spriteBatch.End();
-            }
-        }
-
-        //class for all bullets
-        public class bullet : gameobject
-        {
-            //wow, this class is boring lol
-        }
-
-        //class for the player ship
-        public class ship : gameobject
-        {
-            public int lives = 3;
-        }
-
-        public class enemy1 : gameobject
-        {
-            public int health = 20;
-        }
-
-        public class powerup : gameobject
-        {
-            public int weaponvelocity = 10;
-            public int firerate = 250;
-            public int lifechange = 0;
-            public int damagebuff = 5;
-        }
-
         public void spawnenemy()
         {
             Random rnd = new Random();
             enemy1list.Add(new enemy1());
             enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
             enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, 360);
-            enemy1list[enemy1list.Count - 1].position.Y = 0;
+            enemy1list[enemy1list.Count - 1].position.Y = rnd.Next(0, 360);
             enemy1list[enemy1list.Count - 1].health = 50;
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
         }
-
-
-        public void initbullets()
-        {
-            int i = 0;
-            for (i = 0; i < bulletlist.Count; i++)
-            {
-                bulletlist[i] = genericbullet = new bullet();
-                bulletlist[i].texture = Content.Load<Texture2D>("Sprites/bullet");
-                bulletlist[i].position.X = 0;
-                bulletlist[i].position.Y = 0;
-            }
-        }
-
-
-
 
         //moves the bullet
         public void fire(GameTime gameTime)
@@ -113,31 +51,14 @@ namespace moregameteststuff
             bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
         }
 
-        //controlls and stuff
-        void move(GameTime gameTime)
+        //performs actions other than moving
+        void actions(GameTime gameTime)
         {
             // i love polling
             KeyboardState state = Keyboard.GetState();
 
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            if (state.IsKeyDown(Keys.D))
-            {
-                player.position.X += 5;
-            }
-            if (state.IsKeyDown(Keys.A))
-            {
-                player.position.X -= 5;
-            }
-            if (state.IsKeyDown(Keys.W))
-            {
-                player.position.Y -= 5;
-            }
-            if (state.IsKeyDown(Keys.S))
-            {
-                player.position.Y += 5;
-            }
 
             if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
@@ -200,28 +121,18 @@ namespace moregameteststuff
             }
         }
 
-        public void movebullet()
-        {
-            foreach (bullet bullet in bulletlist.ToArray())
-            {
-                for (int i = 0; i < bulletlist.Count; i++)
-                {
-                    bulletlist[i].position.Y -= currentweapon.weaponvelocity;
-                }
-            }
-        }
-
-
         /// init logic, monogame's default comments are big and boring.
         /// Calling base.Initialize will enumerate through any components, and initialize them as well.
 
         protected override void Initialize()
         {
             base.Initialize();
+            /*
             enemy1list.Add(new enemy1());
             enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
             bulletlist.Add(new bullet());
             bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
+            */
             player.position = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
             oldstate = Keyboard.GetState();
         }
@@ -245,11 +156,13 @@ namespace moregameteststuff
         /// Allows the game to run logic such as updating the world, checking for collisions, gathering input, and playing audio.
         protected override void Update(GameTime gameTime)
         {
-            move(gameTime);
+            player.move(gameTime);
+            actions(gameTime);
             checkbounds();
-            movebullet();
-            timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
+            bullet.movebullet(bulletlist, currentweapon);
             Draw(gameTime);
+            timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
+            
 
             if (player.lives <= 0)
             {
@@ -263,7 +176,6 @@ namespace moregameteststuff
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             player.Draw(spriteBatch);
-            enemy1list[0].Draw(spriteBatch);
             foreach (bullet bullet in bulletlist)
             {
                 for (int i = 0; i < bulletlist.Count; i++)
@@ -290,7 +202,7 @@ namespace moregameteststuff
         }
     }
     /*Blizzard "Bugs" (they are features i swear)
-    * bullet velocity increases as bullets are on the screen. i kind of like this as it allows for "inverse slowdown" for more skillful players
+    * bullet velocity increases as bullets are on the screen. This is due to the way draws are updated, i could fix this but it would be an inefficient bodge
     * 
     */
 }
