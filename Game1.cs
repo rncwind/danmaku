@@ -11,18 +11,15 @@ namespace moregameteststuff
     public class Game1 : Game
     {
         public Microsoft.Xna.Framework.Content.ContentManager content;
-        public ship player = new ship(); //creates the player
-        public int bulletcounter = 0;
-        public byte currentgun = 0;
-        public int firerate = 0;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
         public KeyboardState oldstate;
         public double timesinceshot;
-        public bullet bullet = new bullet();
-        public powerup currentweapon = new powerup();
+        ship player;
+        bullet bullet;
+        powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
             graphics = new GraphicsDeviceManager(this);
@@ -34,21 +31,20 @@ namespace moregameteststuff
         public void spawnenemy()
         {
             Random rnd = new Random();
-            enemy1list.Add(new enemy1());
-            enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
-            enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, 360);
-            enemy1list[enemy1list.Count - 1].position.Y = rnd.Next(0, 360);
-            enemy1list[enemy1list.Count - 1].health = 50;
+            Texture2D enemytex = Content.Load<Texture2D>("Sprites/honk");
+            Vector2 enemypos;
+            enemypos.Y = rnd.Next(0, 420);
+            enemypos.X = rnd.Next(0, 420);
+            enemy1list.Add(new enemy1(enemytex, enemypos));
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
         }
 
         //moves the bullet
         public void fire(GameTime gameTime)
         {
-            bulletlist.Add(new bullet());
-            bulletlist[bulletlist.Count - 1].position.Y = player.position.Y;
-            bulletlist[bulletlist.Count - 1].position.X = player.position.X;
-            bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
+            Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            Vector2 bulletpos = player.position;
+            bulletlist.Add(new bullet(bullettex, bulletpos));
         }
 
         //performs actions other than moving
@@ -142,7 +138,10 @@ namespace moregameteststuff
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            player.texture = Content.Load<Texture2D>("Sprites/ikaruga");
+            Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
+            Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            player = new ship(playertex, Vector2.Zero);
+            bullet = new bullet(bullettex, Vector2.Zero);
 
         }
 
@@ -206,4 +205,3 @@ namespace moregameteststuff
     * 
     */
 }
-

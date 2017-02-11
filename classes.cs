@@ -21,6 +21,12 @@ namespace moregameteststuff
             }
         }
 
+        public gameobject(Texture2D texture, Vector2 position)
+        {
+            this.position = position;
+            this.texture = texture;
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
@@ -32,6 +38,11 @@ namespace moregameteststuff
     public class ship : gameobject
     {
         public int lives = 3;
+
+        public ship(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
+
         public void move(GameTime gameTime)
         {
             // i love polling
@@ -59,7 +70,10 @@ namespace moregameteststuff
     //class for all bullets
     public class bullet : gameobject
     {
-        //wow, this class is boring lol
+        public bullet(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
+
         public void movebullet(List<bullet> bulletlist, powerup currentweapon)
         {
             foreach (bullet bullet in bulletlist)
@@ -75,6 +89,10 @@ namespace moregameteststuff
     public class enemy1 : gameobject
     {
         public int health = 20;
+
+        public enemy1(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
     }
 
     public class powerup : gameobject
@@ -83,5 +101,9 @@ namespace moregameteststuff
         public int firerate = 250;
         public int lifechange = 0;
         public int damagebuff = 5;
+
+        public powerup(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
     }
 }
