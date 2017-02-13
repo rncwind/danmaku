@@ -12,6 +12,7 @@ namespace moregameteststuff
     {
         public Microsoft.Xna.Framework.Content.ContentManager content;
         GraphicsDeviceManager graphics;
+        bool doingactions = false;
         SpriteBatch spriteBatch;
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
@@ -35,8 +36,22 @@ namespace moregameteststuff
             Vector2 enemypos;
             enemypos.Y = rnd.Next(0, (Window.ClientBounds.Height - enemytex.Height) / 2);
             enemypos.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
-            enemy1list.Add(new enemy1(enemytex, enemypos));
+            enemy1 enemy = new enemy1(enemytex,enemypos);
+            enemy1list.Add(enemy);
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
+        }
+
+        public void killenemy(enemy1[] enemyarr, bullet[] bulletarr)
+        {
+            int i = 0;
+                foreach (enemy1 enemy in enemyarr)
+                {
+                    if (enemyarr[i].hit == true)
+                    {
+                        enemy1list.RemoveAt(i);
+                        i++;
+                    }
+                }
         }
 
         //moves the bullet
@@ -50,6 +65,7 @@ namespace moregameteststuff
         //performs actions other than moving
         void actions(GameTime gameTime)
         {
+            doingactions = true;
             // i love polling
             KeyboardState state = Keyboard.GetState();
 
@@ -79,6 +95,8 @@ namespace moregameteststuff
             {
                 timesinceshot = (currentweapon.firerate + 1);
             }
+            checkbulletcollision();
+            doingactions = false;
         }
 
         //bounds checking so the player cant leave the screen
@@ -105,22 +123,31 @@ namespace moregameteststuff
 
         public void checkbulletcollision()
         {
-            int i = 0;
+            /*
             foreach(bullet bullet in bulletlist)
             {
-                try
-                {
-                    if (bulletlist[i].hitbox.Intersects(enemy1list[i].hitbox) && (enemy1list.Count > 0))
-                        enemy1list[i].health -= 10;
-                    if (enemy1list[i].health <= 0 && (enemy1list.Count > 0))
-                        enemy1list[i].killenemy(enemy1list, i);
-                }
-                catch
-                {
-                    Debug.WriteLine("Idk how to do this cleanly dood");
-                }
+                if (bulletlist[i].hitbox.Intersects(enemy1list[i].hitbox))
+                    enemy1list[i].health -= 10;
+                if (enemy1list[i].health <= 0)
+                    enemy1list[i].killenemy(enemy1list, i);
                 i++;
             }
+            */
+            bullet[] bulletarr;
+            enemy1[] enemyarr;
+
+            bulletarr = bulletlist.ToArray();
+            enemyarr = enemy1list.ToArray();
+            if (bulletarr.Length > 0 && enemyarr.Length > 0)
+            {
+                for (int i = 0; i < enemyarr.Length; i++)
+                {
+                    if (bulletarr[i].hitbox.Intersects(enemyarr[i].hitbox)) //this crashes if the arrays are not equaly sized.
+                        enemyarr[i].hit = true;
+                    killenemy(enemyarr, bulletarr);
+                }
+            }
+            
         }
 
         /// init logic, monogame's default comments are big and boring.
@@ -164,9 +191,9 @@ namespace moregameteststuff
         protected override void Update(GameTime gameTime)
         {
             player.move(gameTime);
+            
             actions(gameTime);
             checkbounds();
-            checkbulletcollision();
             bullet.movebullet(bulletlist, currentweapon);
             Draw(gameTime);
             timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -176,6 +203,8 @@ namespace moregameteststuff
             {
                 gameover();
             }
+            
+            
             base.Update(gameTime);
         }
 

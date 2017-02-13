@@ -103,11 +103,7 @@ namespace moregameteststuff
     public class enemy1 : gameobject
     {
         public int health = 20;
-
-        public void killenemy(List<enemy1> enemy1list, int i)
-        {
-            enemy1list.RemoveAt(i);
-        }
+        public bool hit = false;
 
         public enemy1(Texture2D texture, Vector2 position) : base(texture, position)
         {
