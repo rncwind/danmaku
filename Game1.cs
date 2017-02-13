@@ -110,7 +110,9 @@ namespace moregameteststuff
             {
                 try
                 {
+                    if (bulletlist[i].hitbox.Intersects(enemy1list[i].hitbox) && (enemy1list.Count > 0))
                         enemy1list[i].health -= 10;
+                    if (enemy1list[i].health <= 0 && (enemy1list.Count > 0))
                         enemy1list[i].killenemy(enemy1list, i);
                 }
                 catch
