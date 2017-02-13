@@ -84,11 +84,30 @@ namespace moregameteststuff
                 }
             }
         }
+
+        public void bullettrash(List<bullet> bulletlist)
+        {
+            foreach (bullet bullet in bulletlist.ToArray())
+            {
+                for (int i = 0; i < bulletlist.Count; i++)
+                {
+                    if (bulletlist[i].position.Y < -600)
+                    {
+                        bulletlist.RemoveAt(i);
+                    }
+                }
+            }
+        }
     }
 
     public class enemy1 : gameobject
     {
         public int health = 20;
+
+        public void killenemy(List<enemy1> enemy1list, int i)
+        {
+            enemy1list.RemoveAt(i);
+        }
 
         public enemy1(Texture2D texture, Vector2 position) : base(texture, position)
         {

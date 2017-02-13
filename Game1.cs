@@ -33,8 +33,8 @@ namespace moregameteststuff
             Random rnd = new Random();
             Texture2D enemytex = Content.Load<Texture2D>("Sprites/honk");
             Vector2 enemypos;
-            enemypos.Y = rnd.Next(0, 420);
-            enemypos.X = rnd.Next(0, 420);
+            enemypos.Y = rnd.Next(0, (Window.ClientBounds.Height - enemytex.Height) / 2);
+            enemypos.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
             enemy1list.Add(new enemy1(enemytex, enemypos));
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
         }
@@ -64,7 +64,7 @@ namespace moregameteststuff
                     timesinceshot = 0;
                 }
             }
-            bullettrash();
+            bullet.bullettrash(bulletlist);
 
             //the following inputs are debug commands for testing
             if (state.IsKeyDown(Keys.NumPad0)) //spawns new enemy
@@ -103,17 +103,21 @@ namespace moregameteststuff
             }
         }
 
-        public void bullettrash()
+        public void checkbulletcollision()
         {
-            foreach (bullet bullet in bulletlist.ToArray())
+            int i = 0;
+            foreach(bullet bullet in bulletlist)
             {
-                for (int i = 0; i < bulletlist.Count; i++)
+                try
                 {
-                    if (bulletlist[i].position.Y < -600)
-                    {
-                        bulletlist.RemoveAt(i);
-                    }
+                        enemy1list[i].health -= 10;
+                        enemy1list[i].killenemy(enemy1list, i);
                 }
+                catch
+                {
+                    Debug.WriteLine("Idk how to do this cleanly dood");
+                }
+                i++;
             }
         }
 
@@ -129,7 +133,9 @@ namespace moregameteststuff
             bulletlist.Add(new bullet());
             bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
             */
-            player.position = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
+            player.position = new Vector2((Window.ClientBounds.Width - player.texture.Width) / 2, Window.ClientBounds.Height);
+            Debug.WriteLine("Width: " + Window.ClientBounds.Width.ToString());
+            Debug.WriteLine("Height: " + Window.ClientBounds.Height.ToString());
             oldstate = Keyboard.GetState();
         }
 
@@ -158,6 +164,7 @@ namespace moregameteststuff
             player.move(gameTime);
             actions(gameTime);
             checkbounds();
+            checkbulletcollision();
             bullet.movebullet(bulletlist, currentweapon);
             Draw(gameTime);
             timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
