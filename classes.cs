@@ -103,7 +103,7 @@ namespace moregameteststuff
     public class enemy1 : gameobject
     {
         public int health = 20;
-
+        public bool hit = false;
         public void killenemy(List<enemy1> enemy1list, int i)
         {
             enemy1list.RemoveAt(i);
@@ -122,6 +122,13 @@ namespace moregameteststuff
         public int damagebuff = 5;
 
         public powerup(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
+    }
+
+    public class bgsprite : gameobject
+    {
+        public bgsprite(Texture2D texture, Vector2 position) : base(texture,position)
         {
         }
     }

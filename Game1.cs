@@ -19,6 +19,7 @@ namespace moregameteststuff
         public double timesinceshot;
         ship player;
         bullet bullet;
+        bgsprite background;
         powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
@@ -43,8 +44,7 @@ namespace moregameteststuff
         public void fire(GameTime gameTime)
         {
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
-            Vector2 bulletpos = player.position;
-            bulletlist.Add(new bullet(bullettex, bulletpos));
+            bulletlist.Add(new bullet(bullettex, player.position));
         }
 
         //performs actions other than moving
@@ -105,20 +105,31 @@ namespace moregameteststuff
 
         public void checkbulletcollision()
         {
-            int i = 0;
-            foreach(bullet bullet in bulletlist)
+            int i = 0, it = 0;
+            while (i < (bulletlist.Count))
             {
-                try
+                while (it < (enemy1list.Count))
                 {
-                    if (bulletlist[i].hitbox.Intersects(enemy1list[i].hitbox) && (enemy1list.Count > 0))
-                        enemy1list[i].health -= 10;
-                    if (enemy1list[i].health <= 0 && (enemy1list.Count > 0))
-                        enemy1list[i].killenemy(enemy1list, i);
+                    if (enemy1list[it].hitbox.Intersects(bulletlist[i].hitbox))
+                    {
+                        enemy1list[it].hit = true;
+                        killenemy();
+                    }
+                    it++;
                 }
-                catch
-                {
-                    Debug.WriteLine("Idk how to do this cleanly dood");
-                }
+                i++;
+            }
+        }
+
+        public void killenemy()
+        {
+            enemy1[] e1arr;
+            e1arr = enemy1list.ToArray();
+            int i = 0;
+            foreach (enemy1 enemy in e1arr)
+            {
+                if (e1arr[i].hit == true)
+                    enemy1list.RemoveAt(i);
                 i++;
             }
         }
@@ -148,9 +159,10 @@ namespace moregameteststuff
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            Texture2D bgtex = Content.Load<Texture2D>("Sprites/bgsprite");
             player = new ship(playertex, Vector2.Zero);
             bullet = new bullet(bullettex, Vector2.Zero);
-
+            background = new bgsprite(bgtex, Vector2.Zero);
         }
 
         /// UnloadContent will be called once per game and is the place to unload game-specific content.
@@ -183,6 +195,7 @@ namespace moregameteststuff
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            background.Draw(spriteBatch);
             player.Draw(spriteBatch);
             foreach (bullet bullet in bulletlist)
             {
