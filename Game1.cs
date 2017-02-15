@@ -17,7 +17,10 @@ namespace moregameteststuff
         public List<bullet> bulletlist = new List<bullet>();
         public KeyboardState oldstate;
         public double timesinceshot;
-        ship player;
+        double timesinceenemyspawn;
+        
+        GUI hud;
+        public ship player;
         bullet bullet;
         bgsprite background;
         powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
@@ -43,8 +46,11 @@ namespace moregameteststuff
         //moves the bullet
         public void fire(GameTime gameTime)
         {
+            Vector2 bulletpos;
+            bulletpos = player.position;
+            bulletpos.X += 10;
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
-            bulletlist.Add(new bullet(bullettex, player.position));
+            bulletlist.Add(new bullet(bullettex, bulletpos));
         }
 
         //performs actions other than moving
@@ -54,8 +60,10 @@ namespace moregameteststuff
             KeyboardState state = Keyboard.GetState();
 
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                Debug.WriteLine(player.score);
                 Exit();
-
+            }
             if (state.IsKeyDown(Keys.Space) && oldstate.IsKeyUp(Keys.Space))
             {
                 if (timesinceshot > currentweapon.firerate)
@@ -124,13 +132,17 @@ namespace moregameteststuff
         public void killenemy()
         {
             enemy1[] e1arr;
-            e1arr = enemy1list.ToArray();
+            e1arr = enemy1list.ToArray(); //glue to stop out of range exceptions from happening if list size changes during operation
             int i = 0;
             foreach (enemy1 enemy in e1arr)
             {
-                if (e1arr[i].hit)
+                if (e1arr[i].hit == true)
+                {
+                    player.score += e1arr[i].health;
                     enemy1list.RemoveAt(i);
+                }
                 i++;
+                
             }
         }
         
@@ -163,12 +175,13 @@ namespace moregameteststuff
             Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
             Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
-            Vector2 bg2pos;
+            SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
             player = new ship(playertex, Vector2.Zero);
             bullet = new bullet(bullettex, Vector2.Zero);
             background = new bgsprite(bgtex, Vector2.Zero);
-            bg2pos.Y = (background.position.Y - background.texture.Height);
-            bg2pos.X = 0;
+            hud = new GUI();
+            int scorepass = player.score;
+            hud.Draw(spriteFont, spriteBatch, player);
         }
 
         /// UnloadContent will be called once per game and is the place to unload game-specific content.
@@ -181,6 +194,7 @@ namespace moregameteststuff
         /// Allows the game to run logic such as updating the world, checking for collisions, gathering input, and playing audio.
         protected override void Update(GameTime gameTime)
         {
+            
             player.move(gameTime);
             actions(gameTime);
             checkbounds();
@@ -189,7 +203,13 @@ namespace moregameteststuff
             bullet.movebullet(bulletlist, currentweapon);
             Draw(gameTime);
             timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
-            
+            timesinceenemyspawn += gameTime.ElapsedGameTime.TotalMilliseconds;
+
+            if (timesinceenemyspawn > 500)
+            {
+                spawnenemy();
+                timesinceenemyspawn = 0;
+            }
 
             if (player.lives <= 0)
             {
@@ -201,9 +221,11 @@ namespace moregameteststuff
         /// This is called when the game should draw itself.
         protected override void Draw(GameTime gameTime)
         {
+            SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
             GraphicsDevice.Clear(Color.CornflowerBlue);
             background.Draw(spriteBatch);
             player.Draw(spriteBatch);
+            hud.Draw(spriteFont, spriteBatch, player);
             foreach (bullet bullet in bulletlist)
             {
                 for (int i = 0; i < bulletlist.Count; i++)
@@ -212,7 +234,6 @@ namespace moregameteststuff
                 }
             }
 
-
             foreach (enemy1 enemy1 in enemy1list)
             {
                 for (int i = 0; i < enemy1list.Count; i++)
@@ -220,6 +241,7 @@ namespace moregameteststuff
                     enemy1list[i].Draw(spriteBatch);
                 }
             }
+
             base.Draw(gameTime);
         }
 

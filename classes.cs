@@ -38,7 +38,7 @@ namespace moregameteststuff
     public class ship : gameobject
     {
         public int lives = 3;
-
+        public int score;
         public ship(Texture2D texture, Vector2 position) : base(texture, position)
         {
         }
@@ -158,6 +158,17 @@ namespace moregameteststuff
             }
             spriteBatch.Begin();
             spriteBatch.Draw(texture, screenpos - texsize);
+            spriteBatch.End();
+        }
+    }
+
+    public class GUI
+    {
+        public void Draw(SpriteFont spriteFont, SpriteBatch spriteBatch, ship player)
+        {
+            string output = "Score: " + player.score;
+            spriteBatch.Begin();
+            spriteBatch.DrawString(spriteFont, output, new Vector2(0,0),Color.HotPink);
             spriteBatch.End();
         }
     }
