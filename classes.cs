@@ -126,10 +126,39 @@ namespace moregameteststuff
         }
     }
 
-    public class bgsprite : gameobject
+    public class bgsprite : gameobject //the scrolling all works through some black magic.
     {
+        private int screenheight;
+        private Vector2 screenpos, origin, texsize;
         public bgsprite(Texture2D texture, Vector2 position) : base(texture,position)
         {
+        }
+
+        public void initbg(int screenheightpass, int screenwidth)
+        {
+            origin = new Vector2(texture.Width / 2, 0);
+            screenpos = new Vector2(0, screenheight / 2);
+            texsize = new Vector2(0, texture.Height);
+            screenheight = screenheightpass;
+        }
+
+        public void bgloop()
+        {
+            screenpos.Y += 5;
+            screenpos.Y = screenpos.Y % texture.Height;
+        }
+
+        new public void Draw(SpriteBatch spriteBatch)
+        {
+            if(screenpos.Y < screenheight)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(texture, screenpos);
+                spriteBatch.End();
+            }
+            spriteBatch.Begin();
+            spriteBatch.Draw(texture, screenpos - texsize);
+            spriteBatch.End();
         }
     }
 }

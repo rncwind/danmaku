@@ -128,12 +128,12 @@ namespace moregameteststuff
             int i = 0;
             foreach (enemy1 enemy in e1arr)
             {
-                if (e1arr[i].hit == true)
+                if (e1arr[i].hit)
                     enemy1list.RemoveAt(i);
                 i++;
             }
         }
-
+        
         /// init logic, monogame's default comments are big and boring.
         /// Calling base.Initialize will enumerate through any components, and initialize them as well.
 
@@ -146,9 +146,12 @@ namespace moregameteststuff
             bulletlist.Add(new bullet());
             bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
             */
+            int screenheightpass = Window.ClientBounds.Height;
+            int screenwidth = Window.ClientBounds.Width;
             player.position = new Vector2((Window.ClientBounds.Width - player.texture.Width) / 2, Window.ClientBounds.Height);
             Debug.WriteLine("Width: " + Window.ClientBounds.Width.ToString());
             Debug.WriteLine("Height: " + Window.ClientBounds.Height.ToString());
+            background.initbg(screenheightpass, screenwidth);
             oldstate = Keyboard.GetState();
         }
 
@@ -159,10 +162,13 @@ namespace moregameteststuff
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
-            Texture2D bgtex = Content.Load<Texture2D>("Sprites/bgsprite");
+            Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            Vector2 bg2pos;
             player = new ship(playertex, Vector2.Zero);
             bullet = new bullet(bullettex, Vector2.Zero);
             background = new bgsprite(bgtex, Vector2.Zero);
+            bg2pos.Y = (background.position.Y - background.texture.Height);
+            bg2pos.X = 0;
         }
 
         /// UnloadContent will be called once per game and is the place to unload game-specific content.
@@ -179,6 +185,7 @@ namespace moregameteststuff
             actions(gameTime);
             checkbounds();
             checkbulletcollision();
+            background.bgloop();
             bullet.movebullet(bulletlist, currentweapon);
             Draw(gameTime);
             timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
