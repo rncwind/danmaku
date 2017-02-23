@@ -104,14 +104,34 @@ namespace moregameteststuff
     {
         public int health = 20;
         public bool hit = false;
-        public void killenemy(List<enemy1> enemy1list, int i)
-        {
-            enemy1list.RemoveAt(i);
-        }
 
         public enemy1(Texture2D texture, Vector2 position) : base(texture, position)
         {
         }
+    }
+
+    public class enemy2 : gameobject
+    {
+        public int health = 50;
+        Microsoft.Xna.Framework.Content.ContentManager content;
+        /*
+        public enemy2(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
+        */
+        public enemy2(Texture2D texture, Vector2 position) : base(texture,position)
+        {
+        }
+    }
+
+    public class boss1 : gameobject
+    {
+        public bool defeated = false;
+        public boss1(Texture2D texture, Vector2 position) : base(texture, position)
+        {
+        }
+    
+        public int health = 200;
     }
 
     public class powerup : gameobject
@@ -166,10 +186,45 @@ namespace moregameteststuff
     {
         public void Draw(SpriteFont spriteFont, SpriteBatch spriteBatch, ship player)
         {
-            string output = "Score: " + player.score;
+            string scorestr = "Score: " + player.score;
+            string lifestr = "Lives: " + player.lives;
             spriteBatch.Begin();
-            spriteBatch.DrawString(spriteFont, output, new Vector2(0,0),Color.HotPink);
+            spriteBatch.DrawString(spriteFont, scorestr, new Vector2(0,0),Color.HotPink);
+            spriteBatch.DrawString(spriteFont, lifestr, new Vector2(660, 0), Color.HotPink);
             spriteBatch.End();
+        }
+    }
+
+    public class pattern
+    {
+        public Vector2[] getpattern(char patternchar)
+        {
+            if (patternchar == 'v')
+            {
+                Vector2[] vectorarr = new Vector2[10];
+                vectorarr[0] = new Vector2(0, 0);
+                vectorarr[1] = new Vector2(30, 30);
+                vectorarr[2] = new Vector2(60, 60);
+                vectorarr[3] = new Vector2(90, 30);
+                vectorarr[4] = new Vector2(120, 0);
+                return vectorarr;
+            }
+            if (patternchar == 'x')
+            {
+                Vector2[] vectorarr = new Vector2[10];
+                vectorarr[0] = new Vector2(0, 0);
+                vectorarr[1] = new Vector2(30, 30);
+                vectorarr[2] = new Vector2(60, 60);
+                vectorarr[4] = new Vector2(0, 60);
+                vectorarr[5] = new Vector2(60, 0);
+                return vectorarr;
+            }
+            else
+            {
+                Vector2[] vectorarr = new Vector2[10];
+                vectorarr[0] = new Vector2(0, 0);
+                return vectorarr;
+            }
         }
     }
 }

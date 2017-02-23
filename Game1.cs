@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Text;
+using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 
@@ -13,17 +14,24 @@ namespace moregameteststuff
         public Microsoft.Xna.Framework.Content.ContentManager content;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
+        List<enemy2> e2list = new List<enemy2>();
         public KeyboardState oldstate;
+
         public double timesinceshot;
         double timesinceenemyspawn;
-        
+        bool l1bossfight = false;
+
         GUI hud;
-        public ship player;
+        ship player;
         bullet bullet;
         bgsprite background;
         powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
+        boss1 l1boss;
+        
+        Texture2D enemy2tex;
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
             graphics = new GraphicsDeviceManager(this);
@@ -41,6 +49,14 @@ namespace moregameteststuff
             enemypos.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
             enemy1list.Add(new enemy1(enemytex, enemypos));
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
+        }
+
+        public void spawnboss()
+        {
+            Texture2D bosstex = Content.Load<Texture2D>("Sprites/cacodeamon");
+            l1boss = new boss1(bosstex, new Vector2(360, 500));
+            l1boss.Draw(spriteBatch);
+            l1bossfight = true;
         }
 
         //moves the bullet
@@ -87,6 +103,14 @@ namespace moregameteststuff
             {
                 timesinceshot = (currentweapon.firerate + 1);
             }
+            if (state.IsKeyDown(Keys.NumPad2))
+                highscore();
+            if (state.IsKeyDown(Keys.NumPad3))
+                spawnboss();
+            if (state.IsKeyDown(Keys.NumPad4))
+            {
+                patterning();
+            }
         }
 
         //bounds checking so the player cant leave the screen
@@ -111,53 +135,58 @@ namespace moregameteststuff
             }
         }
 
-        public void checkbulletcollision()
+        public void highscore()
         {
-            int i = 0, it = 0;
-            while (i < (bulletlist.Count))
+            Int32 timestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            string playername = Microsoft.VisualBasic.Interaction.InputBox("Name?", "Input player name", "");
+            System.IO.StreamWriter file = new System.IO.StreamWriter("scores.csv", true);
+            file.WriteLine(playername + ',' + player.score + ',' + timestamp.ToString());
+            file.Close();
+        }
+
+        public void readinscores() //if became production code replace with db backend
+        {
+            string[] fields = null;
+            using (Microsoft.VisualBasic.FileIO.TextFieldParser csvParser = new Microsoft.VisualBasic.FileIO.TextFieldParser("scores.csv"))
             {
-                while (it < (enemy1list.Count))
+                csvParser.ReadLine(); //skips first line with the headers
+                csvParser.CommentTokens = new string[] { "#" };
+                csvParser.SetDelimiters(new string[] { "," });
+                csvParser.HasFieldsEnclosedInQuotes = true;
+
+                while (!csvParser.EndOfData)
                 {
-                    if (enemy1list[it].hitbox.Intersects(bulletlist[i].hitbox))
-                    {
-                        enemy1list[it].hit = true;
-                        killenemy();
-                    }
-                    it++;
+                    fields = csvParser.ReadFields();
                 }
-                i++;
             }
         }
 
-        public void killenemy()
+        public void checkbulletcollision() //WE'LL MAKE OUR OWN COLLISION DETECTION, WITH LINQ AND HOOKERS
         {
-            enemy1[] e1arr;
-            e1arr = enemy1list.ToArray(); //glue to stop out of range exceptions from happening if list size changes during operation
-            int i = 0;
-            foreach (enemy1 enemy in e1arr)
+            List<enemy1> collides = null;
+
+            if (enemy1list.Count > 0 && bulletlist.Count > 0)
             {
-                if (e1arr[i].hit == true)
+                int i = 0;
+                for (i = 0; i < bulletlist.Count; ++i)
                 {
-                    player.score += e1arr[i].health;
-                    enemy1list.RemoveAt(i);
+                    collides = enemy1list.Where(x => x.hitbox.Intersects(bulletlist[i].hitbox)).ToList();
                 }
-                i++;
-                
+                killenemy(collides);
             }
         }
-        
+
+        public void killenemy(List<enemy1> collides)
+        {
+            enemy1list = enemy1list.Except(collides).ToList();
+        }
+
         /// init logic, monogame's default comments are big and boring.
         /// Calling base.Initialize will enumerate through any components, and initialize them as well.
 
         protected override void Initialize()
         {
             base.Initialize();
-            /*
-            enemy1list.Add(new enemy1());
-            enemy1list[enemy1list.Count - 1].texture = Content.Load<Texture2D>("Sprites/honk");
-            bulletlist.Add(new bullet());
-            bulletlist[bulletlist.Count - 1].texture = Content.Load<Texture2D>("Sprites/bullet");
-            */
             int screenheightpass = Window.ClientBounds.Height;
             int screenwidth = Window.ClientBounds.Width;
             player.position = new Vector2((Window.ClientBounds.Width - player.texture.Width) / 2, Window.ClientBounds.Height);
@@ -165,6 +194,7 @@ namespace moregameteststuff
             Debug.WriteLine("Height: " + Window.ClientBounds.Height.ToString());
             background.initbg(screenheightpass, screenwidth);
             oldstate = Keyboard.GetState();
+            spawnenemy();
         }
 
         /// Loads game content
@@ -175,6 +205,8 @@ namespace moregameteststuff
             Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
             Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            Texture2D enemy2tex = Content.Load<Texture2D>("Sprites/cacodeamon");
+
             SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
             player = new ship(playertex, Vector2.Zero);
             bullet = new bullet(bullettex, Vector2.Zero);
@@ -194,7 +226,6 @@ namespace moregameteststuff
         /// Allows the game to run logic such as updating the world, checking for collisions, gathering input, and playing audio.
         protected override void Update(GameTime gameTime)
         {
-            
             player.move(gameTime);
             actions(gameTime);
             checkbounds();
@@ -214,6 +245,33 @@ namespace moregameteststuff
             if (player.lives <= 0)
             {
                 gameover();
+            }
+
+            if (player.score > 2000 && l1bossfight == false)
+            {
+                spawnboss();
+            }
+
+            if (l1bossfight == true)
+            {
+                int direction = 0;
+                if (l1boss.health <= 0)
+                {
+                    l1boss.defeated = true;
+                }
+                else
+                {
+                    Random rnd = new Random();
+                    direction = rnd.Next(0, 4);
+                    if (direction == 0)
+                        l1boss.position.X += rnd.Next(0, 30);
+                    if (direction == 1)
+                        l1boss.position.X -= rnd.Next(0, 30);
+                    if (direction == 2)
+                        l1boss.position.Y += rnd.Next(0, 30);
+                    if (direction == 3)
+                        l1boss.position.Y -= rnd.Next(0, 30);
+                }
             }
             base.Update(gameTime);
         }
@@ -242,13 +300,63 @@ namespace moregameteststuff
                 }
             }
 
+            foreach (enemy2 enemy2 in e2list)
+            {
+                for (int i = 0; i < enemy1list.Count; i++)
+                {
+                    enemy1list[i].Draw(spriteBatch);
+                }
+            }
+
+            if (l1bossfight == true)
+            {
+                l1boss.Draw(spriteBatch);
+                if (l1boss.defeated == true)
+                {
+                    clearlevel();
+                }
+            }
             base.Draw(gameTime);
         }
 
-        public void gameover()
+
+        //LEVEL 2 BEGINS HERE
+        public void patterning()
+        {
+            pattern patterninst = new pattern();
+            Vector2[] vectorarr = new Vector2[10];
+            char patternchar = 'v';
+            vectorarr = patterninst.getpattern(patternchar);
+            patternspawn(patternchar, vectorarr);
+        }
+
+        public void patternspawn(char patternchar, Vector2[] patternarr)
+        {
+            if (patternchar == 'v')
+            {
+                for (int i = 0; i <= 4; i++)
+                    e2list.Add(new enemy2(Content.Load<Texture2D>("Sprites/cacodeamon"), patternarr[i]));
+            }
+            if (patternchar == 'x')
+            {
+                for (int i = 0; i <= 5; i++)
+                    e2list.Add(new enemy2(Content.Load<Texture2D>("Sprites/cacodeamon"), patternarr[i]));
+            }
+        }
+
+
+
+    public void gameover()
         {
             Debug.WriteLine("Player lost");
+            highscore();
             Exit();
+        }
+
+        public void clearlevel()
+        {
+            enemy1list.Clear();
+            bulletlist.Clear();
         }
     }
     /*Blizzard "Bugs" (they are features i swear)
@@ -256,3 +364,4 @@ namespace moregameteststuff
     * 
     */
 }
+
