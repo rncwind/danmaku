@@ -113,12 +113,7 @@ namespace moregameteststuff
     public class enemy2 : gameobject
     {
         public int health = 50;
-        Microsoft.Xna.Framework.Content.ContentManager content;
-        /*
-        public enemy2(Texture2D texture, Vector2 position) : base(texture, position)
-        {
-        }
-        */
+
         public enemy2(Texture2D texture, Vector2 position) : base(texture,position)
         {
         }

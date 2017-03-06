@@ -17,9 +17,10 @@ namespace moregameteststuff
 
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
-        List<enemy2> e2list = new List<enemy2>();
+        
         public KeyboardState oldstate;
 
+        int exitcode;
         public double timesinceshot;
         double timesinceenemyspawn;
         bool l1bossfight = false;
@@ -31,7 +32,6 @@ namespace moregameteststuff
         powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
         boss1 l1boss;
         
-        Texture2D enemy2tex;
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
             graphics = new GraphicsDeviceManager(this);
@@ -107,10 +107,7 @@ namespace moregameteststuff
                 highscore();
             if (state.IsKeyDown(Keys.NumPad3))
                 spawnboss();
-            if (state.IsKeyDown(Keys.NumPad4))
-            {
-                patterning();
-            }
+            
         }
 
         //bounds checking so the player cant leave the screen
@@ -190,8 +187,6 @@ namespace moregameteststuff
             int screenheightpass = Window.ClientBounds.Height;
             int screenwidth = Window.ClientBounds.Width;
             player.position = new Vector2((Window.ClientBounds.Width - player.texture.Width) / 2, Window.ClientBounds.Height);
-            Debug.WriteLine("Width: " + Window.ClientBounds.Width.ToString());
-            Debug.WriteLine("Height: " + Window.ClientBounds.Height.ToString());
             background.initbg(screenheightpass, screenwidth);
             oldstate = Keyboard.GetState();
             spawnenemy();
@@ -219,7 +214,6 @@ namespace moregameteststuff
         /// UnloadContent will be called once per game and is the place to unload game-specific content.
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
             Content.Unload();
         }
 
@@ -300,48 +294,17 @@ namespace moregameteststuff
                 }
             }
 
-            foreach (enemy2 enemy2 in e2list)
-            {
-                for (int i = 0; i < enemy1list.Count; i++)
-                {
-                    enemy1list[i].Draw(spriteBatch);
-                }
-            }
-
             if (l1bossfight == true)
             {
                 l1boss.Draw(spriteBatch);
                 if (l1boss.defeated == true)
                 {
                     clearlevel();
+                    using (var game2 = new Game2())
+                        game2.Run();
                 }
             }
             base.Draw(gameTime);
-        }
-
-
-        //LEVEL 2 BEGINS HERE
-        public void patterning()
-        {
-            pattern patterninst = new pattern();
-            Vector2[] vectorarr = new Vector2[10];
-            char patternchar = 'v';
-            vectorarr = patterninst.getpattern(patternchar);
-            patternspawn(patternchar, vectorarr);
-        }
-
-        public void patternspawn(char patternchar, Vector2[] patternarr)
-        {
-            if (patternchar == 'v')
-            {
-                for (int i = 0; i <= 4; i++)
-                    e2list.Add(new enemy2(Content.Load<Texture2D>("Sprites/cacodeamon"), patternarr[i]));
-            }
-            if (patternchar == 'x')
-            {
-                for (int i = 0; i <= 5; i++)
-                    e2list.Add(new enemy2(Content.Load<Texture2D>("Sprites/cacodeamon"), patternarr[i]));
-            }
         }
 
 
@@ -350,6 +313,7 @@ namespace moregameteststuff
         {
             Debug.WriteLine("Player lost");
             highscore();
+            clearlevel();
             Exit();
         }
 
@@ -357,6 +321,7 @@ namespace moregameteststuff
         {
             enemy1list.Clear();
             bulletlist.Clear();
+            UnloadContent();
         }
     }
     /*Blizzard "Bugs" (they are features i swear)

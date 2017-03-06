@@ -1,5 +1,6 @@
 ﻿using System;
 
+
 namespace moregameteststuff
 {
 #if WINDOWS || LINUX
@@ -14,8 +15,12 @@ namespace moregameteststuff
         [STAThread]
         static void Main()
         {
+            /*
             using (var game = new Game1())
                 game.Run();
+                */
+            using (var game2 = new Game2())
+                game2.Run();
         }
     }
 #endif
