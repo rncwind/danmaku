@@ -18,6 +18,7 @@ namespace moregameteststuff
             /*
             using (var game = new Game1())
                 game.Run();
+<<<<<<< HEAD
             
         using (var game2 = new Game2())
             game2.Run();
@@ -26,6 +27,11 @@ namespace moregameteststuff
             {
                 Game1_rw.Run();
             }
+=======
+                */
+            using (var game2 = new Game2())
+                game2.Run();
+>>>>>>> origin/master
         }
     }
 #endif

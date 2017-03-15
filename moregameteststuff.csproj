@@ -55,7 +55,10 @@
   <ItemGroup>
     <Compile Include="classes.cs" />
     <Compile Include="Game1.cs" />
+<<<<<<< HEAD
     <Compile Include="Game1_rw.cs" />
+=======
+>>>>>>> origin/master
     <Compile Include="Game2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
