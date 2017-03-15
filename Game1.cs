@@ -107,15 +107,11 @@ namespace moregameteststuff
                 highscore();
             if (state.IsKeyDown(Keys.NumPad3))
                 spawnboss();
-<<<<<<< HEAD
             if (state.IsKeyDown(Keys.NumPad4))
             {
                 readinscores();
                 highscore();
             }
-=======
->>>>>>> origin/master
-            
         }
 
         //bounds checking so the player cant leave the screen
