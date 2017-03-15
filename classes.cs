@@ -27,6 +27,11 @@ namespace moregameteststuff
             this.texture = texture;
         }
 
+        public gameobject(Vector2 position)
+        {
+            this.position = position;
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
@@ -107,18 +112,14 @@ namespace moregameteststuff
 
         public enemy1(Texture2D texture, Vector2 position) : base(texture, position)
         {
+            
         }
     }
 
     public class enemy2 : gameobject
     {
         public int health = 50;
-        Microsoft.Xna.Framework.Content.ContentManager content;
-        /*
-        public enemy2(Texture2D texture, Vector2 position) : base(texture, position)
-        {
-        }
-        */
+
         public enemy2(Texture2D texture, Vector2 position) : base(texture,position)
         {
         }
