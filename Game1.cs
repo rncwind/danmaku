@@ -17,13 +17,13 @@ namespace moregameteststuff
 
         public List<enemy1> enemy1list = new List<enemy1>();
         public List<bullet> bulletlist = new List<bullet>();
-        
+        List<enemy1bullet> e1bulletlist = new List<enemy1bullet>();
+
         public KeyboardState oldstate;
 
-        int exitcode;
         public double timesinceshot;
         double timesinceenemyspawn;
-        bool l1bossfight = false;
+        bool l1bossfight = false,prevstatehit = false;
 
         GUI hud;
         ship player;
@@ -31,7 +31,8 @@ namespace moregameteststuff
         bgsprite background;
         powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
         boss1 l1boss;
-        
+
+
         public Game1() //constructor for the game, sets graphics things such as the height and width of the window, as well as where to load content from
         {
             graphics = new GraphicsDeviceManager(this);
@@ -42,6 +43,7 @@ namespace moregameteststuff
 
         public void spawnenemy()
         {
+            bool invalid = false;
             Random rnd = new Random();
             Texture2D enemytex = Content.Load<Texture2D>("Sprites/honk");
             Vector2 enemypos;
@@ -49,7 +51,22 @@ namespace moregameteststuff
             enemypos.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
             enemy1list.Add(new enemy1(enemytex, enemypos));
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
+
+            int i = 0;
+            for (i = 0; i < bulletlist.Count; ++i)
+            {
+                if (enemy1list[enemy1list.Count - 1].hitbox.Intersects(bulletlist[i].hitbox) == true)
+                    invalid = true;
+            }
+
+            if (invalid == true)
+            {
+                enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
+                enemy1list[enemy1list.Count - 1].position.Y = rnd.Next(0, (Window.ClientBounds.Height - enemytex.Height) / 2);
+            }
         }
+
+        
 
         public void spawnboss()
         {
@@ -67,6 +84,11 @@ namespace moregameteststuff
             bulletpos.X += 10;
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
             bulletlist.Add(new bullet(bullettex, bulletpos));
+        }
+
+        public void enemyfire(GameTime gameTime)
+        {
+
         }
 
         //performs actions other than moving
@@ -112,6 +134,8 @@ namespace moregameteststuff
                 readinscores();
                 highscore();
             }
+            if (state.IsKeyDown(Keys.NumPad5))
+                spawne1bullet(Vector2.Zero);
         }
 
         //bounds checking so the player cant leave the screen
@@ -179,7 +203,39 @@ namespace moregameteststuff
 
         public void killenemy(List<enemy1> collides)
         {
+            player.score += (collides.Count * 10);
             enemy1list = enemy1list.Except(collides).ToList();
+            collides.Clear();
+        }
+
+        public void spawne1bullet(Vector2 passvec)
+        {
+            Texture2D e1bullettex = Content.Load<Texture2D>("Sprites/enemybullet");
+            e1bulletlist.Add(new enemy1bullet(passvec, e1bullettex));
+        }
+
+        public void checke1bcollision()
+        {
+            for (int i = 0; i < e1bulletlist.Count; ++i)
+            {
+                if (e1bulletlist[i].hitbox.Intersects(player.hitbox) && prevstatehit == false)
+                {
+                    prevstatehit = true;
+                    player.lives -= 1;
+                }
+                if (e1bulletlist[i].hitbox.Intersects(player.hitbox) == false)
+                    prevstatehit = false;
+            }
+            /*
+            if (tesstbullet.hitbox.Intersects(player.hitbox) && prevstatehit == false)
+            {
+                prevstatehit = true;
+                player.lives -= 1;
+            }
+
+            if (tesstbullet.hitbox.Intersects(player.hitbox) == false)
+                prevstatehit = false;
+                */
         }
 
         /// init logic, monogame's default comments are big and boring.
@@ -205,6 +261,7 @@ namespace moregameteststuff
             Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
             Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
             Texture2D enemy2tex = Content.Load<Texture2D>("Sprites/cacodeamon");
+            Texture2D e1bullettex = Content.Load<Texture2D>("Sprites/enemybullet");
 
             SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
             player = new ship(playertex, Vector2.Zero);
@@ -228,6 +285,7 @@ namespace moregameteststuff
             actions(gameTime);
             checkbounds();
             checkbulletcollision();
+            checke1bcollision();
             background.bgloop();
             bullet.movebullet(bulletlist, currentweapon);
             Draw(gameTime); 
@@ -283,6 +341,15 @@ namespace moregameteststuff
             background.Draw(spriteBatch);
             player.Draw(spriteBatch);
             hud.Draw(spriteFont, spriteBatch, player);
+
+            foreach (enemy1bullet e1bullet in e1bulletlist)
+            {
+                for (int i = 0; i < e1bulletlist.Count; i++)
+                {
+                    e1bulletlist[i].Draw(spriteBatch);
+                }
+            }
+
             foreach (bullet bullet in bulletlist)
             {
                 for (int i = 0; i < bulletlist.Count; i++)

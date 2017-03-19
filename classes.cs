@@ -9,8 +9,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace moregameteststuff
 {
-    public class gameobject
+    public class gameobject : Game
     {
+        
         public Texture2D texture;
         public Vector2 position;
         public Rectangle hitbox
@@ -25,11 +26,6 @@ namespace moregameteststuff
         {
             this.position = position;
             this.texture = texture;
-        }
-
-        public gameobject(Vector2 position)
-        {
-            this.position = position;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -103,6 +99,14 @@ namespace moregameteststuff
                 }
             }
         }
+    }
+
+    public class enemy1bullet : gameobject
+    {
+        public enemy1bullet(Vector2 position,Texture2D texture) : base(texture,position)
+        {
+        }
+
     }
 
     public class enemy1 : gameobject
