@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 
-namespace moregameteststuff
+namespace mgtsrw
 {
     /// <summary>
     /// This is the main type for your game.
@@ -15,6 +15,9 @@ namespace moregameteststuff
 
         List<enemy1> enemy1list = new List<enemy1>();
         List<bullet> bulletlist = new List<bullet>();
+
+        ship player;
+        bgsprite background;
 
         Texture2D e1texture, playertex, bullettex, bosstex;
 
@@ -36,6 +39,8 @@ namespace moregameteststuff
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            //called before game loop for 1 time init work, idk if i'll use it
+            
             base.Initialize();
         }
 
@@ -45,11 +50,23 @@ namespace moregameteststuff
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
+            int screenheightpass;
+            int screenwidth;
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
             e1texture = Content.Load<Texture2D>("Sprites/honk");
+            bullettex = Content.Load<Texture2D>("bulletn");
+            playertex = Content.Load<Texture2D>("Sprites/ikaruga");
+            bosstex = Content.Load<Texture2D>("Sprites/cacodeamon");
+
+            Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            background = new bgsprite(bgtex, Vector2.Zero);
+            background.initbg(screenheightpass = Window.ClientBounds.Height, screenwidth = Window.ClientBounds.Width);
+
+            player = new ship(playertex, Vector2.Zero);
+            player.position = new Vector2((graphics.PreferredBackBufferWidth - player.texture.Width) / 2, (graphics.PreferredBackBufferHeight / 2));
+
             enemy1list.Add(new enemy1(e1texture, Vector2.Zero));
-            // TODO: use this.Content to load your game content here
         }
 
         /// <summary>
@@ -58,7 +75,7 @@ namespace moregameteststuff
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            Content.Unload();
         }
 
         /// <summary>
@@ -68,12 +85,12 @@ namespace moregameteststuff
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
             // TODO: Add your update logic here
-
             base.Update(gameTime);
+            player.move();
+            player.addbullet(bulletlist, player.position, bullettex);
         }
 
         /// <summary>
@@ -82,9 +99,16 @@ namespace moregameteststuff
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            background.Draw(spriteBatch);
             enemy1list[0].Draw(spriteBatch);
-            // TODO: Add your drawing code here
+            player.Draw(spriteBatch);
+            for (int i = 0; i < bulletlist.Count; i++)
+            {
+                bulletlist[i].Draw(spriteBatch);
+                bulletlist[i].movebullet(bulletlist);
+            }
+            if (bulletlist.Count >= 1)
+                enemy1list[0].destroyenemy(enemy1list, bulletlist);
             base.Draw(gameTime);
         }
     }

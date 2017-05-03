@@ -14,7 +14,7 @@ namespace moregameteststuff
         
         public Texture2D texture;
         public Vector2 position;
-        public Rectangle hitbox
+        public Rectangle hitbox //getter for creating and assigning a hitbox for new objects
         {
             get
             {
@@ -22,13 +22,13 @@ namespace moregameteststuff
             }
         }
 
-        public gameobject(Texture2D texture, Vector2 position)
+        public gameobject(Texture2D texture, Vector2 position) //constructor for gameobjects
         {
             this.position = position;
             this.texture = texture;
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch) //draw fuction that allows objects to draw themselves indipendently.
         {
             spriteBatch.Begin();
             spriteBatch.Draw(texture, position);
@@ -40,11 +40,11 @@ namespace moregameteststuff
     {
         public int lives = 3;
         public int score;
-        public ship(Texture2D texture, Vector2 position) : base(texture, position)
+        public ship(Texture2D texture, Vector2 position) : base(texture, position) //constructor for the ship
         {
         }
 
-        public void move(GameTime gameTime)
+        public void move() //function to allow for player movement
         {
             // i love polling
             KeyboardState state = Keyboard.GetState();
@@ -71,11 +71,11 @@ namespace moregameteststuff
     //class for all bullets
     public class bullet : gameobject
     {
-        public bullet(Texture2D texture, Vector2 position) : base(texture, position)
+        public bullet(Texture2D texture, Vector2 position) : base(texture, position)//constructor
         {
         }
 
-        public void movebullet(List<bullet> bulletlist, powerup currentweapon)
+        public void movebullet(List<bullet> bulletlist, powerup currentweapon)//function that moves all bullets that currently exist and are not disposed of
         {
             foreach (bullet bullet in bulletlist)
             {
@@ -86,7 +86,7 @@ namespace moregameteststuff
             }
         }
 
-        public void bullettrash(List<bullet> bulletlist)
+        public void bullettrash(List<bullet> bulletlist)//disposes of bullets that are too far off the screen.
         {
             foreach (bullet bullet in bulletlist.ToArray())
             {
@@ -101,20 +101,25 @@ namespace moregameteststuff
         }
     }
 
-    public class enemy1bullet : gameobject
+    public class enemy1bullet : gameobject//class for default enemy bullets
     {
-        public enemy1bullet(Vector2 position,Texture2D texture) : base(texture,position)
+        public enemy1bullet(Vector2 position,Texture2D texture) : base(texture,position)//constructor
         {
+        }
+
+        public void move()//allows for bullet movement each tick
+        {
+            this.position.Y += 1;
         }
 
     }
 
-    public class enemy1 : gameobject
+    public class enemy1 : gameobject//default enemy
     {
         public int health = 20;
         public bool hit = false;
 
-        public enemy1(Texture2D texture, Vector2 position) : base(texture, position)
+        public enemy1(Texture2D texture, Vector2 position) : base(texture, position)//constructor
         {
             
         }
@@ -123,6 +128,7 @@ namespace moregameteststuff
     public class enemy2 : gameobject
     {
         public int health = 50;
+        public double timesincefired = 0;
 
         public enemy2(Texture2D texture, Vector2 position) : base(texture,position)
         {
@@ -155,11 +161,11 @@ namespace moregameteststuff
     {
         private int screenheight;
         private Vector2 screenpos, origin, texsize;
-        public bgsprite(Texture2D texture, Vector2 position) : base(texture,position)
+        public bgsprite(Texture2D texture, Vector2 position) : base(texture,position)//constructor
         {
         }
 
-        public void initbg(int screenheightpass, int screenwidth)
+        public void initbg(int screenheightpass, int screenwidth)//init operations that setup the bh
         {
             origin = new Vector2(texture.Width / 2, 0);
             screenpos = new Vector2(0, screenheight / 2);
@@ -167,15 +173,11 @@ namespace moregameteststuff
             screenheight = screenheightpass;
         }
 
-        public void bgloop()
-        {
-            screenpos.Y += 5;
-            screenpos.Y = screenpos.Y % texture.Height;
-        }
-
         new public void Draw(SpriteBatch spriteBatch)
         {
-            if(screenpos.Y < screenheight)
+            screenpos.Y += 5;//incriments the position of the texture
+            screenpos.Y = screenpos.Y % texture.Height;//modulos the position of the texture by its height and assigns the position the resultant value
+            if (screenpos.Y < screenheight)
             {
                 spriteBatch.Begin();
                 spriteBatch.Draw(texture, screenpos);
@@ -189,7 +191,7 @@ namespace moregameteststuff
 
     public class GUI
     {
-        public void Draw(SpriteFont spriteFont, SpriteBatch spriteBatch, ship player)
+        public void Draw(SpriteFont spriteFont, SpriteBatch spriteBatch, ship player)//draws the GUI elements such as score and player lives.
         {
             string scorestr = "Score: " + player.score;
             string lifestr = "Lives: " + player.lives;
@@ -200,7 +202,7 @@ namespace moregameteststuff
         }
     }
 
-    public class pattern
+    public class pattern//a class to generate enemy spawn patterns based on latin characters
     {
         public Vector2[] getpattern(char patternchar)
         {

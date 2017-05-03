@@ -120,8 +120,6 @@ namespace moregameteststuff
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            background.bgloop();
             base.Update(gameTime);
         }
 
@@ -144,7 +142,7 @@ namespace moregameteststuff
                 }
             }
             background.Draw(spriteBatch);
-            player.move(gameTime);
+            player.move();
             checkbounds();
             player.Draw(spriteBatch);
             base.Draw(gameTime);
