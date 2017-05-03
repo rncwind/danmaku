@@ -50,22 +50,27 @@ namespace mgtsrw
         /// </summary>
         protected override void LoadContent()
         {
+            //misc and momogame stuff
             int screenheightpass;
             int screenwidth;
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            //textures
             e1texture = Content.Load<Texture2D>("Sprites/honk");
             bullettex = Content.Load<Texture2D>("bulletn");
             playertex = Content.Load<Texture2D>("Sprites/ikaruga");
             bosstex = Content.Load<Texture2D>("Sprites/cacodeamon");
-
             Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+
+            //background init
             background = new bgsprite(bgtex, Vector2.Zero);
             background.initbg(screenheightpass = Window.ClientBounds.Height, screenwidth = Window.ClientBounds.Width);
 
+            //player init
             player = new ship(playertex, Vector2.Zero);
             player.position = new Vector2((graphics.PreferredBackBufferWidth - player.texture.Width) / 2, (graphics.PreferredBackBufferHeight / 2));
 
+            //debug enemy
             enemy1list.Add(new enemy1(e1texture, Vector2.Zero));
         }
 
@@ -87,9 +92,13 @@ namespace mgtsrw
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            if (Keyboard.GetState().IsKeyDown(Keys.G))
+                enemy1list.Add(new enemy1(e1texture, Vector2.Zero));
             // TODO: Add your update logic here
             base.Update(gameTime);
             player.move();
+            if (enemy1list.Count > 0 && bulletlist.Count > 0)
+                enemy1list = enemy1list[enemy1list.Count -1].destroyenemy(enemy1list, bulletlist);
             player.addbullet(bulletlist, player.position, bullettex);
         }
 
@@ -100,15 +109,14 @@ namespace mgtsrw
         protected override void Draw(GameTime gameTime)
         {
             background.Draw(spriteBatch);
-            enemy1list[0].Draw(spriteBatch);
-            player.Draw(spriteBatch);
+            for (int i = 0; i < enemy1list.Count; i++)
+                enemy1list[i].Draw(spriteBatch);
             for (int i = 0; i < bulletlist.Count; i++)
             {
                 bulletlist[i].Draw(spriteBatch);
                 bulletlist[i].movebullet(bulletlist);
             }
-            if (bulletlist.Count >= 1)
-                enemy1list[0].destroyenemy(enemy1list, bulletlist);
+            player.Draw(spriteBatch);
             base.Draw(gameTime);
         }
     }

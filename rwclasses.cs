@@ -133,12 +133,19 @@ namespace mgtsrw
 
         public List<enemy1> destroyenemy(List<enemy1> enemy1list, List<bullet> bulletlist)
         {
-            for (int i = 0; i < enemy1list.Count; i++)
+            List<enemy1> hitlist;
+            foreach (enemy1 enemy1 in enemy1list)
             {
-                if (bulletlist[i].hitbox.Intersects(enemy1list[i].hitbox))
-                    Debug.Write(i.ToString() + "INTERSECTS");
-                    
+                foreach (bullet bullet in bulletlist)
+                {
+                    if (bullet.hitbox.Intersects(enemy1.hitbox))
+                    {           
+                        this.hit = true;
+                    }
+                }
             }
+            hitlist = enemy1list.Where(x => x.hit == true).ToList();
+            enemy1list = enemy1list.Except(hitlist).ToList();
             return enemy1list;
         }
     }
