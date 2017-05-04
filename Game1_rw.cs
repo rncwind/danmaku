@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System;
+using System.Diagnostics;
 
 namespace mgtsrw
 {
@@ -15,6 +17,9 @@ namespace mgtsrw
 
         List<enemy> enemylist = new List<enemy>();
         List<bullet> bulletlist = new List<bullet>();
+
+        Random rngh = new Random(1000);
+        Random rngw = new Random(720);
 
         ship player;
         bgsprite background;
@@ -92,14 +97,18 @@ namespace mgtsrw
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            if (Keyboard.GetState().IsKeyDown(Keys.G))
-                enemylist.Add(new enemy(e1texture, Vector2.Zero, player));
+            if (Keyboard.GetState().IsKeyDown(Keys.C))
+            {
+                Vector2 enemypos = new Vector2(rngw.Next(0,(Window.ClientBounds.Width)), rngh.Next(0, (Window.ClientBounds.Height)));
+                enemylist.Add(new enemy(e1texture, enemypos, player));
+            }
             // TODO: Add your update logic here
-            base.Update(gameTime);
-            player.move();
             if (enemylist.Count > 0 && bulletlist.Count > 0)
-                enemylist = enemylist[enemylist.Count -1].destroyenemy(enemylist, bulletlist, player);
+                enemylist = enemylist[enemylist.Count - 1].destroyenemy(enemylist, bulletlist, player);
+            Debug.WriteLine(enemylist.Count);
             player.addbullet(bulletlist, player.position, bullettex);
+            player.move();
+            base.Update(gameTime);
         }
 
         /// <summary>

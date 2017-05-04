@@ -142,14 +142,16 @@ namespace mgtsrw
                 {
                     if (bullet.hitbox.Intersects(enemy.hitbox))
                     {           
-                        this.hit = true;
+                        enemy.hit = true;
                     }
                 }
             }
             hitlist = enemylist.Where(x => x.hit == true).ToList();
+            /*
             foreach (enemy enemy in hitlist)
                 this.health -= 10;
             hitlist = hitlist.Where(x => x.health <= 0).ToList();
+            */
             enemylist = enemylist.Except(hitlist).ToList();
             player.score += ((hitlist.Count * 10)*player.level);
             return enemylist;
@@ -166,14 +168,14 @@ namespace mgtsrw
         }
     }
 
-    public class boss1 : gameobject
+    public class boss1 : enemy
     {
         public bool defeated = false;
-        public boss1(Texture2D texture, Vector2 position) : base(texture, position)
+        public boss1(Texture2D texture, Vector2 position, ship player) : base(texture, position, player)
         {
+            this.health = ((20 * player.level) * 10);
         }
 
-        public int health = 200;
     }
 
     public class powerup : gameobject
