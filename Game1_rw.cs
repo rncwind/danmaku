@@ -13,7 +13,7 @@ namespace mgtsrw
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        List<enemy1> enemy1list = new List<enemy1>();
+        List<enemy> enemylist = new List<enemy>();
         List<bullet> bulletlist = new List<bullet>();
 
         ship player;
@@ -71,7 +71,7 @@ namespace mgtsrw
             player.position = new Vector2((graphics.PreferredBackBufferWidth - player.texture.Width) / 2, (graphics.PreferredBackBufferHeight / 2));
 
             //debug enemy
-            enemy1list.Add(new enemy1(e1texture, Vector2.Zero));
+            enemylist.Add(new enemy(e1texture, Vector2.Zero, player));
         }
 
         /// <summary>
@@ -93,12 +93,12 @@ namespace mgtsrw
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             if (Keyboard.GetState().IsKeyDown(Keys.G))
-                enemy1list.Add(new enemy1(e1texture, Vector2.Zero));
+                enemylist.Add(new enemy(e1texture, Vector2.Zero, player));
             // TODO: Add your update logic here
             base.Update(gameTime);
             player.move();
-            if (enemy1list.Count > 0 && bulletlist.Count > 0)
-                enemy1list = enemy1list[enemy1list.Count -1].destroyenemy(enemy1list, bulletlist);
+            if (enemylist.Count > 0 && bulletlist.Count > 0)
+                enemylist = enemylist[enemylist.Count -1].destroyenemy(enemylist, bulletlist, player);
             player.addbullet(bulletlist, player.position, bullettex);
         }
 
@@ -109,8 +109,8 @@ namespace mgtsrw
         protected override void Draw(GameTime gameTime)
         {
             background.Draw(spriteBatch);
-            for (int i = 0; i < enemy1list.Count; i++)
-                enemy1list[i].Draw(spriteBatch);
+            for (int i = 0; i < enemylist.Count; i++)
+                enemylist[i].Draw(spriteBatch);
             for (int i = 0; i < bulletlist.Count; i++)
             {
                 bulletlist[i].Draw(spriteBatch);

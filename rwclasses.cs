@@ -41,6 +41,7 @@ namespace mgtsrw
     {
         public int lives = 3;
         public int score;
+        public int level = 1;
         public ship(Texture2D texture, Vector2 position) : base(texture, position) //constructor for the ship
         {
         }
@@ -122,31 +123,36 @@ namespace mgtsrw
 
     }
 
-    public class enemy1 : gameobject//default enemy
+    public class enemy : gameobject//default enemy
     {
-        public int health = 20;
+        public int health;
         public bool hit = false;
 
-        public enemy1(Texture2D texture, Vector2 position) : base(texture, position)//constructor
+        public enemy(Texture2D texture, Vector2 position, ship player) : base(texture, position)//constructor
         {
+            this.health = (20 * player.level);
         }
 
-        public List<enemy1> destroyenemy(List<enemy1> enemy1list, List<bullet> bulletlist)
+        public List<enemy> destroyenemy(List<enemy> enemylist, List<bullet> bulletlist, ship player)
         {
-            List<enemy1> hitlist;
-            foreach (enemy1 enemy1 in enemy1list)
+            List<enemy> hitlist;
+            foreach (enemy enemy in enemylist)
             {
                 foreach (bullet bullet in bulletlist)
                 {
-                    if (bullet.hitbox.Intersects(enemy1.hitbox))
+                    if (bullet.hitbox.Intersects(enemy.hitbox))
                     {           
                         this.hit = true;
                     }
                 }
             }
-            hitlist = enemy1list.Where(x => x.hit == true).ToList();
-            enemy1list = enemy1list.Except(hitlist).ToList();
-            return enemy1list;
+            hitlist = enemylist.Where(x => x.hit == true).ToList();
+            foreach (enemy enemy in hitlist)
+                this.health -= 10;
+            hitlist = hitlist.Where(x => x.health <= 0).ToList();
+            enemylist = enemylist.Except(hitlist).ToList();
+            player.score += ((hitlist.Count * 10)*player.level);
+            return enemylist;
         }
     }
 
