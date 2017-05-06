@@ -50,23 +50,26 @@ namespace mgtsrw
         {
             // i love polling
             KeyboardState state = Keyboard.GetState();
-
+            int speed = 10;
+            if (state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift)) //movespeed slowdown for good players. Standard danmaku mechanic
+                speed = 5;
             if (state.IsKeyDown(Keys.D))
             {
-                this.position.X += 5;
+                position.X += speed;
             }
             if (state.IsKeyDown(Keys.A))
             {
-                this.position.X -= 5;
+                position.X -= speed;
             }
             if (state.IsKeyDown(Keys.W))
             {
-                this.position.Y -= 5;
+                position.Y -= speed;
             }
             if (state.IsKeyDown(Keys.S))
             {
-                this.position.Y += 5;
+                position.Y += speed;
             }
+            speed = 5;
         }
 
         public List<bullet> addbullet(List<bullet> bulletlist, Vector2 playerpos, Texture2D bullettex)
@@ -89,38 +92,25 @@ namespace mgtsrw
 
         public List<bullet> movebullet(List<bullet> bulletlist) //,powerup currentweapon)//function that moves all bullets that currently exist and are not disposed of
         {
-            for (int i = 0; i < bulletlist.Count; i++)
-            {
-                bulletlist[i].position.Y -= 5; //currentweapon.weaponvelocity;
-                bulletlist[i].bullettrash(bulletlist);
-            }
+            foreach (bullet bullet in bulletlist)
+                position.Y -= 5;
             return bulletlist;
-        }
-
-        public void bullettrash(List<bullet> bulletlist)//disposes of bullets that are too far off the screen.
-        {
-            for (int i = 0; i < bulletlist.Count; i++)
-            {
-                if (bulletlist[i].position.Y < -600)
-                {
-                    bulletlist.RemoveAt(i);
-                }
-            }
         }
     }
 
 
-    public class enemy1bullet : gameobject//class for default enemy bullets
+    public class ebullet : gameobject//class for default enemy bullets
     {
-        public enemy1bullet(Vector2 position, Texture2D texture) : base(texture, position)//constructor
+        public ebullet(Vector2 position, Texture2D texture) : base(texture, position)//constructor
         {
         }
 
-        public void move()//allows for bullet movement each tick
+        public List<ebullet> move(List<ebullet> ebulletlist)//allows for bullet movement each tick
         {
-            this.position.Y += 1;
+            foreach (ebullet ebullet in ebulletlist)
+                position.Y += 5;
+            return ebulletlist;
         }
-
     }
 
     public class enemy : gameobject//default enemy
@@ -130,7 +120,7 @@ namespace mgtsrw
 
         public enemy(Texture2D texture, Vector2 position, ship player) : base(texture, position)//constructor
         {
-            this.health = (20 * player.level);
+            health = (20 * player.level);
         }
 
         public List<enemy> destroyenemy(List<enemy> enemylist, List<bullet> bulletlist, ship player)

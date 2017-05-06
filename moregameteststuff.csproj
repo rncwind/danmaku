@@ -57,6 +57,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Game1_rw.cs" />
     <Compile Include="Game2.cs" />
+    <Compile Include="Game2_rw.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rwclasses.cs" />

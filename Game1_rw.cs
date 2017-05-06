@@ -12,8 +12,7 @@ namespace mgtsrw
     /// </summary>
     public class Game1_rw : Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        GraphicsDeviceManager graphics;SpriteBatch spriteBatch;
 
         List<enemy> enemylist = new List<enemy>();
         List<bullet> bulletlist = new List<bullet>();
@@ -24,8 +23,10 @@ namespace mgtsrw
         ship player;
         bgsprite background;
 
-        Texture2D e1texture, playertex, bullettex, bosstex;
+        Texture2D e1texture, playertex, bullettex, bosstex, bgtex;
 
+        double enemydelta = 0, bulletdelta =0;
+        int initlvscore = 0;
 
         public Game1_rw()
         {
@@ -60,23 +61,41 @@ namespace mgtsrw
             int screenwidth;
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            //textures
-            e1texture = Content.Load<Texture2D>("Sprites/honk");
-            bullettex = Content.Load<Texture2D>("bulletn");
+            //player init
             playertex = Content.Load<Texture2D>("Sprites/ikaruga");
-            bosstex = Content.Load<Texture2D>("Sprites/cacodeamon");
-            Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            player = new ship(playertex, Vector2.Zero);
+            player.position = new Vector2((graphics.PreferredBackBufferWidth - player.texture.Width) / 2, (graphics.PreferredBackBufferHeight / 2));
+
+            //textures
+            if (player.level == 1)
+            {
+                initlvscore = player.score;
+                e1texture = Content.Load<Texture2D>("Sprites/honk");
+                bullettex = Content.Load<Texture2D>("bulletn");
+                bosstex = Content.Load<Texture2D>("Sprites/cacodeamon");
+                bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            }
 
             //background init
             background = new bgsprite(bgtex, Vector2.Zero);
             background.initbg(screenheightpass = Window.ClientBounds.Height, screenwidth = Window.ClientBounds.Width);
-
-            //player init
-            player = new ship(playertex, Vector2.Zero);
-            player.position = new Vector2((graphics.PreferredBackBufferWidth - player.texture.Width) / 2, (graphics.PreferredBackBufferHeight / 2));
-
+            
             //debug enemy
             enemylist.Add(new enemy(e1texture, Vector2.Zero, player));
+        }
+
+        public void levelswitch()
+        {
+            if (player.level == 2)
+            {
+                enemylist.Clear();
+                bulletlist.Clear();
+                e1texture = Content.Load<Texture2D>("Sprites/honk");
+                bullettex = Content.Load<Texture2D>("Sprites/honk");
+                bosstex = Content.Load<Texture2D>("Sprites/honk");
+                bgtex = Content.Load<Texture2D>("Sprites/ikaruga");
+                background = new bgsprite(bgtex, Vector2.Zero);
+            }
         }
 
         /// <summary>
@@ -97,18 +116,37 @@ namespace mgtsrw
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            if (Keyboard.GetState().IsKeyDown(Keys.C))
+            if (Keyboard.GetState().IsKeyDown(Keys.C)) //debug function, remove in prod
             {
                 Vector2 enemypos = new Vector2(rngw.Next(0,(Window.ClientBounds.Width)), rngh.Next(0, (Window.ClientBounds.Height)));
                 enemylist.Add(new enemy(e1texture, enemypos, player));
+                player.level = 2;
+                levelswitch();
             }
+            Debug.Write(player.score);
             // TODO: Add your update logic here
+            levelswitch();
             if (enemylist.Count > 0 && bulletlist.Count > 0)
                 enemylist = enemylist[enemylist.Count - 1].destroyenemy(enemylist, bulletlist, player);
-            Debug.WriteLine(enemylist.Count);
-            player.addbullet(bulletlist, player.position, bullettex);
             player.move();
             base.Update(gameTime);
+            enemydelta += gameTime.ElapsedGameTime.TotalMilliseconds;
+            bulletdelta += gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (bulletdelta >= 200 && Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                bulletdelta = 0;
+                player.addbullet(bulletlist, player.position, bullettex);
+            }
+            if (enemydelta >= 1000)
+            {
+                enemydelta = 0;
+                Vector2 enemypos = new Vector2(rngw.Next(0, (Window.ClientBounds.Width - e1texture.Width)), rngh.Next(0, (Window.ClientBounds.Height/2)-e1texture.Height));
+                enemylist.Add(new enemy(e1texture, enemypos, player));
+            }
+            if (player.score == (initlvscore + 1000))
+            {
+                player.level++;
+            }
         }
 
         /// <summary>
@@ -118,12 +156,12 @@ namespace mgtsrw
         protected override void Draw(GameTime gameTime)
         {
             background.Draw(spriteBatch);
-            for (int i = 0; i < enemylist.Count; i++)
-                enemylist[i].Draw(spriteBatch);
-            for (int i = 0; i < bulletlist.Count; i++)
+            foreach (enemy enemy in enemylist)
+                enemy.Draw(spriteBatch);
+            foreach (bullet bullet in bulletlist)
             {
-                bulletlist[i].Draw(spriteBatch);
-                bulletlist[i].movebullet(bulletlist);
+                bullet.movebullet(bulletlist);
+                bullet.Draw(spriteBatch);
             }
             player.Draw(spriteBatch);
             base.Draw(gameTime);
