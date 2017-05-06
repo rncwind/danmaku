@@ -2,22 +2,31 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System;
+using System.Diagnostics;
 
-namespace moregameteststuff
+namespace mgtsrw
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
     public class Game1_rw : Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        GraphicsDeviceManager graphics;SpriteBatch spriteBatch;
 
-        List<enemy1> enemy1list = new List<enemy1>();
+        List<enemy> enemylist = new List<enemy>();
         List<bullet> bulletlist = new List<bullet>();
 
-        Texture2D e1texture, playertex, bullettex, bosstex;
+        Random rngh = new Random(1000);
+        Random rngw = new Random(720);
 
+        ship player;
+        bgsprite background;
+
+        Texture2D e1texture, playertex, bullettex, bosstex, bgtex;
+
+        double enemydelta = 0, bulletdelta =0;
+        int initlvscore = 0;
 
         public Game1_rw()
         {
@@ -36,6 +45,8 @@ namespace moregameteststuff
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            //called before game loop for 1 time init work, idk if i'll use it
+            
             base.Initialize();
         }
 
@@ -45,11 +56,48 @@ namespace moregameteststuff
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
+            //misc and momogame stuff
+            int screenheightpass;
+            int screenwidth;
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            e1texture = Content.Load<Texture2D>("Sprites/honk");
-            enemy1list.Add(new enemy1(e1texture, Vector2.Zero));
-            // TODO: use this.Content to load your game content here
+
+            //player init
+            playertex = Content.Load<Texture2D>("Sprites/ikaruga");
+            player = new ship(playertex, Vector2.Zero);
+            player.position = new Vector2((graphics.PreferredBackBufferWidth - player.texture.Width) / 2, (graphics.PreferredBackBufferHeight / 2));
+
+            //textures
+            if (player.level == 1)
+            {
+                initlvscore = player.score;
+                e1texture = Content.Load<Texture2D>("Sprites/honk");
+                bullettex = Content.Load<Texture2D>("bulletn");
+                bosstex = Content.Load<Texture2D>("Sprites/cacodeamon");
+                bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            }
+
+            //background init
+            background = new bgsprite(bgtex, Vector2.Zero);
+            background.initbg(screenheightpass = Window.ClientBounds.Height, screenwidth = Window.ClientBounds.Width);
+
+            
+
+            //debug enemy
+            enemylist.Add(new enemy(e1texture, Vector2.Zero, player));
+        }
+
+        public void levelswitch()
+        {
+            if (player.level == 2)
+            {
+                enemylist.Clear();
+                bulletlist.Clear();
+                e1texture = Content.Load<Texture2D>("Sprites/honk");
+                bullettex = Content.Load<Texture2D>("Sprites/honk");
+                bosstex = Content.Load<Texture2D>("Sprites/honk");
+                bgtex = Content.Load<Texture2D>("Sprites/ikaruga");
+                background = new bgsprite(bgtex, Vector2.Zero);
+            }
         }
 
         /// <summary>
@@ -58,7 +106,7 @@ namespace moregameteststuff
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            Content.Unload();
         }
 
         /// <summary>
@@ -68,12 +116,39 @@ namespace moregameteststuff
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
+            if (Keyboard.GetState().IsKeyDown(Keys.C)) //debug function, remove in prod
+            {
+                Vector2 enemypos = new Vector2(rngw.Next(0,(Window.ClientBounds.Width)), rngh.Next(0, (Window.ClientBounds.Height)));
+                enemylist.Add(new enemy(e1texture, enemypos, player));
+                player.level = 2;
+                levelswitch();
+            }
+            Debug.Write(player.score);
             // TODO: Add your update logic here
-
+            levelswitch();
+            if (enemylist.Count > 0 && bulletlist.Count > 0)
+                enemylist = enemylist[enemylist.Count - 1].destroyenemy(enemylist, bulletlist, player);
+            player.move();
             base.Update(gameTime);
+            enemydelta += gameTime.ElapsedGameTime.TotalMilliseconds;
+            bulletdelta += gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (bulletdelta >= 200 && Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                bulletdelta = 0;
+                player.addbullet(bulletlist, player.position, bullettex);
+            }
+            if (enemydelta >= 1000)
+            {
+                enemydelta = 0;
+                Vector2 enemypos = new Vector2(rngw.Next(0, (Window.ClientBounds.Width - e1texture.Width)), rngh.Next(0, (Window.ClientBounds.Height/2)-e1texture.Height));
+                enemylist.Add(new enemy(e1texture, enemypos, player));
+            }
+            if (player.score == (initlvscore + 1000))
+            {
+                player.level++;
+            }
         }
 
         /// <summary>
@@ -82,9 +157,15 @@ namespace moregameteststuff
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-            enemy1list[0].Draw(spriteBatch);
-            // TODO: Add your drawing code here
+            background.Draw(spriteBatch);
+            foreach (enemy enemy in enemylist)
+                enemy.Draw(spriteBatch);
+            foreach (bullet bullet in bulletlist)
+            {
+                bullet.movebullet(bulletlist);
+                bullet.Draw(spriteBatch);
+            }
+            player.Draw(spriteBatch);
             base.Draw(gameTime);
         }
     }

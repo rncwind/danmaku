@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace moregameteststuff
+namespace mgtsrw
 {
 #if WINDOWS || LINUX
     /// <summary>
@@ -14,6 +14,7 @@ namespace moregameteststuff
         [STAThread]
         static void Main()
         {
+            /*
             string input;
             input = Microsoft.VisualBasic.Interaction.InputBox("Chose game","Chose game");
 
@@ -31,11 +32,12 @@ namespace moregameteststuff
 
             else if (input == "rewrite1")
             {
+            */
                 using (var Game1_rw = new Game1_rw())
                 {
                     Game1_rw.Run();
                 }
-            }
+            //}
         }
     }
 #endif

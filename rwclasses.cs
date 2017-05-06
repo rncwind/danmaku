@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Diagnostics;
 
-namespace moregameteststuff
+namespace mgtsrw
 {
     public class gameobject : Game
     {
-        
+
         public Texture2D texture;
         public Vector2 position;
         public Rectangle hitbox //getter for creating and assigning a hitbox for new objects
@@ -40,6 +41,7 @@ namespace moregameteststuff
     {
         public int lives = 3;
         public int score;
+        public int level = 1;
         public ship(Texture2D texture, Vector2 position) : base(texture, position) //constructor for the ship
         {
         }
@@ -48,24 +50,37 @@ namespace moregameteststuff
         {
             // i love polling
             KeyboardState state = Keyboard.GetState();
-
+            int speed = 10;
+            if (state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift)) //movespeed slowdown for good players. Standard danmaku mechanic
+                speed = 5;
             if (state.IsKeyDown(Keys.D))
             {
-                this.position.X += 5;
+                position.X += speed;
             }
             if (state.IsKeyDown(Keys.A))
             {
-                this.position.X -= 5;
+                position.X -= speed;
             }
             if (state.IsKeyDown(Keys.W))
             {
-                this.position.Y -= 5;
+                position.Y -= speed;
             }
             if (state.IsKeyDown(Keys.S))
             {
-                this.position.Y += 5;
+                position.Y += speed;
             }
+            speed = 5;
         }
+
+        public List<bullet> addbullet(List<bullet> bulletlist, Vector2 playerpos, Texture2D bullettex)
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                bulletlist.Add(new bullet(bullettex, playerpos));
+            }
+            return bulletlist;
+        }
+
     }
 
     //class for all bullets
@@ -75,53 +90,61 @@ namespace moregameteststuff
         {
         }
 
-        public void movebullet(List<bullet> bulletlist, powerup currentweapon)//function that moves all bullets that currently exist and are not disposed of
+        public List<bullet> movebullet(List<bullet> bulletlist) //,powerup currentweapon)//function that moves all bullets that currently exist and are not disposed of
         {
             foreach (bullet bullet in bulletlist)
-            {
-                for (int i = 0; i < bulletlist.Count; ++i)
-                {
-                    bulletlist[i].position.Y -= currentweapon.weaponvelocity;
-                }
-            }
+                position.Y -= 5;
+            return bulletlist;
+        }
+    }
+
+
+    public class ebullet : gameobject//class for default enemy bullets
+    {
+        public ebullet(Vector2 position, Texture2D texture) : base(texture, position)//constructor
+        {
         }
 
-        public void bullettrash(List<bullet> bulletlist)//disposes of bullets that are too far off the screen.
+        public List<ebullet> move(List<ebullet> ebulletlist)//allows for bullet movement each tick
         {
-            foreach (bullet bullet in bulletlist.ToArray())
+            foreach (ebullet ebullet in ebulletlist)
+                position.Y += 5;
+            return ebulletlist;
+        }
+    }
+
+    public class enemy : gameobject//default enemy
+    {
+        public int health;
+        public bool hit = false;
+
+        public enemy(Texture2D texture, Vector2 position, ship player) : base(texture, position)//constructor
+        {
+            health = (20 * player.level);
+        }
+
+        public List<enemy> destroyenemy(List<enemy> enemylist, List<bullet> bulletlist, ship player)
+        {
+            List<enemy> hitlist;
+            foreach (enemy enemy in enemylist)
             {
-                for (int i = 0; i < bulletlist.Count; i++)
+                foreach (bullet bullet in bulletlist)
                 {
-                    if (bulletlist[i].position.Y < -600)
-                    {
-                        bulletlist.RemoveAt(i);
+                    if (bullet.hitbox.Intersects(enemy.hitbox))
+                    {           
+                        enemy.hit = true;
                     }
                 }
             }
-        }
-    }
-
-    public class enemy1bullet : gameobject//class for default enemy bullets
-    {
-        public enemy1bullet(Vector2 position,Texture2D texture) : base(texture,position)//constructor
-        {
-        }
-
-        public void move()//allows for bullet movement each tick
-        {
-            this.position.Y += 1;
-        }
-
-    }
-
-    public class enemy1 : gameobject//default enemy
-    {
-        public int health = 20;
-        public bool hit = false;
-
-        public enemy1(Texture2D texture, Vector2 position) : base(texture, position)//constructor
-        {
-            
+            hitlist = enemylist.Where(x => x.hit == true).ToList();
+            /*
+            foreach (enemy enemy in hitlist)
+                this.health -= 10;
+            hitlist = hitlist.Where(x => x.health <= 0).ToList();
+            */
+            enemylist = enemylist.Except(hitlist).ToList();
+            player.score += ((hitlist.Count * 10)*player.level);
+            return enemylist;
         }
     }
 
@@ -130,19 +153,19 @@ namespace moregameteststuff
         public int health = 50;
         public double timesincefired = 0;
 
-        public enemy2(Texture2D texture, Vector2 position) : base(texture,position)
+        public enemy2(Texture2D texture, Vector2 position) : base(texture, position)
         {
         }
     }
 
-    public class boss1 : gameobject
+    public class boss1 : enemy
     {
         public bool defeated = false;
-        public boss1(Texture2D texture, Vector2 position) : base(texture, position)
+        public boss1(Texture2D texture, Vector2 position, ship player) : base(texture, position, player)
         {
+            this.health = ((20 * player.level) * 10);
         }
-    
-        public int health = 200;
+
     }
 
     public class powerup : gameobject
@@ -161,7 +184,7 @@ namespace moregameteststuff
     {
         private int screenheight;
         private Vector2 screenpos, origin, texsize;
-        public bgsprite(Texture2D texture, Vector2 position) : base(texture,position)//constructor
+        public bgsprite(Texture2D texture, Vector2 position) : base(texture, position)//constructor
         {
         }
 
@@ -196,7 +219,7 @@ namespace moregameteststuff
             string scorestr = "Score: " + player.score;
             string lifestr = "Lives: " + player.lives;
             spriteBatch.Begin();
-            spriteBatch.DrawString(spriteFont, scorestr, new Vector2(0,0),Color.HotPink);
+            spriteBatch.DrawString(spriteFont, scorestr, new Vector2(0, 0), Color.HotPink);
             spriteBatch.DrawString(spriteFont, lifestr, new Vector2(660, 0), Color.HotPink);
             spriteBatch.End();
         }

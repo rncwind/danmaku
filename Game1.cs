@@ -25,9 +25,12 @@ namespace moregameteststuff
         double timesinceenemyspawn;
         bool l1bossfight = false,prevstatehit = false;
 
+        Texture2D enemytex;
+
         GUI hud;
         ship player;
         bullet bullet;
+        enemy1 enemy1dummy;
         bgsprite background;
         powerup currentweapon = new powerup(texture: null, position: Vector2.Zero);
         boss1 l1boss;
@@ -43,15 +46,18 @@ namespace moregameteststuff
 
         public void spawnenemy()
         {
-            bool invalid = false;
+            //bool invalid = false;
             Random rnd = new Random();
-            Texture2D enemytex = Content.Load<Texture2D>("Sprites/honk");
+            
             Vector2 enemypos;
-            enemypos.Y = rnd.Next(0, (Window.ClientBounds.Height - enemytex.Height) / 2);
-            enemypos.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
-            enemy1list.Add(new enemy1(enemytex, enemypos));
+            enemypos.Y = rnd.Next(0, (Window.ClientBounds.Height - enemy1dummy.texture.Height) / 2);
+            enemypos.X = rnd.Next(0, (Window.ClientBounds.Width - enemy1dummy.texture.Width));
+            enemy1dummy.position = enemypos;
+            enemy1list.Add(new enemy1(enemy1dummy.texture, enemy1dummy.position));
             enemy1list[enemy1list.Count - 1].Draw(spriteBatch);
 
+
+            /*
             int i = 0;
             for (i = 0; i < bulletlist.Count; ++i)
             {
@@ -64,6 +70,7 @@ namespace moregameteststuff
                 enemy1list[enemy1list.Count - 1].position.X = rnd.Next(0, (Window.ClientBounds.Width - enemytex.Width));
                 enemy1list[enemy1list.Count - 1].position.Y = rnd.Next(0, (Window.ClientBounds.Height - enemytex.Height) / 2);
             }
+            */
         }
 
         
@@ -82,13 +89,13 @@ namespace moregameteststuff
             Vector2 bulletpos;
             bulletpos = player.position;
             bulletpos.X += 10;
-            Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
+            Texture2D bullettex = Content.Load<Texture2D>("bulletn");
             bulletlist.Add(new bullet(bullettex, bulletpos));
         }
 
         public void enemyfire(GameTime gameTime)
         {
-
+            spawne1bullet(enemy1list[0].position);
         }
 
         //performs actions other than moving
@@ -135,7 +142,7 @@ namespace moregameteststuff
                 highscore();
             }
             if (state.IsKeyDown(Keys.NumPad5))
-                spawne1bullet(Vector2.Zero);
+                enemyfire(gameTime);
         }
 
         //bounds checking so the player cant leave the screen
@@ -207,95 +214,13 @@ namespace moregameteststuff
             enemy1list = enemy1list.Except(collides).ToList();
             collides.Clear();
         }
-
-        public void spawne1bullet(Vector2 passvec)
+        
+        public void updateifs()
         {
-            Texture2D e1bullettex = Content.Load<Texture2D>("Sprites/enemybullet");
-            e1bulletlist.Add(new enemy1bullet(passvec, e1bullettex));
-        }
-
-        public void checke1bcollision()
-        {
-            for (int i = 0; i < e1bulletlist.Count; ++i)
-            {
-                if (e1bulletlist[i].hitbox.Intersects(player.hitbox) && prevstatehit == false)
-                {
-                    prevstatehit = true;
-                    player.lives -= 1;
-                }
-                if (e1bulletlist[i].hitbox.Intersects(player.hitbox) == false)
-                    prevstatehit = false;
-            }
-            /*
-            if (tesstbullet.hitbox.Intersects(player.hitbox) && prevstatehit == false)
-            {
-                prevstatehit = true;
-                player.lives -= 1;
-            }
-
-            if (tesstbullet.hitbox.Intersects(player.hitbox) == false)
-                prevstatehit = false;
-                */
-        }
-
-        /// init logic, monogame's default comments are big and boring.
-        /// Calling base.Initialize will enumerate through any components, and initialize them as well.
-
-        protected override void Initialize()
-        {
-            base.Initialize();
-            int screenheightpass = Window.ClientBounds.Height;
-            int screenwidth = Window.ClientBounds.Width;
-            player.position = new Vector2((Window.ClientBounds.Width - player.texture.Width) / 2, Window.ClientBounds.Height);
-            background.initbg(screenheightpass, screenwidth);
-            oldstate = Keyboard.GetState();
-            spawnenemy();
-        }
-
-        /// Loads game content
-        protected override void LoadContent() //personally i found this override kind of useless as texturing on the fly was easier
-        {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-            Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
-            Texture2D bullettex = Content.Load<Texture2D>("Sprites/bullet");
-            Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
-            Texture2D enemy2tex = Content.Load<Texture2D>("Sprites/cacodeamon");
-            Texture2D e1bullettex = Content.Load<Texture2D>("Sprites/enemybullet");
-
-            SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
-            player = new ship(playertex, Vector2.Zero);
-            bullet = new bullet(bullettex, Vector2.Zero);
-            background = new bgsprite(bgtex, Vector2.Zero);
-            hud = new GUI();
-            int scorepass = player.score;
-            hud.Draw(spriteFont, spriteBatch, player);
-        }
-
-        /// UnloadContent will be called once per game and is the place to unload game-specific content.
-        protected override void UnloadContent()
-        {
-            Content.Unload();
-        }
-
-        /// Allows the game to run logic such as updating the world, checking for collisions, gathering input, and playing audio.
-        protected override void Update(GameTime gameTime)
-        {
-            player.move(gameTime);
-            actions(gameTime);
-            checkbounds();
-            checkbulletcollision();
-            checke1bcollision();
-            background.bgloop();
-            bullet.movebullet(bulletlist, currentweapon);
-            Draw(gameTime); 
-            timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
-            timesinceenemyspawn += gameTime.ElapsedGameTime.TotalMilliseconds;
-
             if (timesinceenemyspawn > 500)
             {
                 spawnenemy();
-                
+
                 timesinceenemyspawn = 0;
             }
 
@@ -330,6 +255,85 @@ namespace moregameteststuff
                         l1boss.position.Y -= rnd.Next(0, 30);
                 }
             }
+        }
+
+        public void spawne1bullet(Vector2 passvec)
+        {
+            Texture2D e1bullettex = Content.Load<Texture2D>("Sprites/enemybullet");
+            e1bulletlist.Add(new enemy1bullet(passvec, e1bullettex));
+        }
+
+        public void checke1bcollision()
+        {
+            for (int i = 0; i < e1bulletlist.Count; ++i)
+            {
+                if (e1bulletlist[i].hitbox.Intersects(player.hitbox) && prevstatehit == false)
+                {
+                    prevstatehit = true;
+                    player.lives -= 1;
+                }
+                if (e1bulletlist[i].hitbox.Intersects(player.hitbox) == false)
+                    prevstatehit = false;
+            }
+        }
+
+        /// init logic, monogame's default comments are big and boring.
+        /// Calling base.Initialize will enumerate through any components, and initialize them as well.
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            int screenheightpass = Window.ClientBounds.Height;
+            int screenwidth = Window.ClientBounds.Width;
+            player.position = new Vector2((Window.ClientBounds.Width - player.texture.Width) / 2, Window.ClientBounds.Height);
+            background.initbg(screenheightpass, screenwidth);
+            oldstate = Keyboard.GetState();
+            spawnenemy();
+        }
+
+        /// Loads game content
+        protected override void LoadContent()
+        {
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            Texture2D playertex = Content.Load<Texture2D>("Sprites/ikaruga");
+            Texture2D bullettex = Content.Load<Texture2D>("bulletn");
+            Texture2D bgtex = Content.Load<Texture2D>("Sprites/spacetex");
+            Texture2D enemy2tex = Content.Load<Texture2D>("Sprites/cacodeamon");
+            Texture2D e1bullettex = Content.Load<Texture2D>("Sprites/enemybullet");
+            Texture2D enemytex = Content.Load<Texture2D>("Sprites/honk");
+
+            SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
+            player = new ship(playertex, Vector2.Zero);
+            bullet = new bullet(bullettex, Vector2.Zero);
+            background = new bgsprite(bgtex, Vector2.Zero);
+            hud = new GUI();
+            enemy1dummy = new enemy1(enemytex, Vector2.Zero);
+            int scorepass = player.score;
+            hud.Draw(spriteFont, spriteBatch, player);
+        }
+
+        /// UnloadContent will be called once per game and is the place to unload game-specific content.
+        protected override void UnloadContent()
+        {
+            Content.Unload();
+        }
+
+        /// Allows the game to run logic such as updating the world, checking for collisions, gathering input, and playing audio.
+        protected override void Update(GameTime gameTime)
+        {
+            player.move();
+            actions(gameTime);
+            checkbounds();
+            checkbulletcollision();
+            checke1bcollision();
+            bullet.movebullet(bulletlist, currentweapon);
+            Draw(gameTime);
+
+            timesinceshot += gameTime.ElapsedGameTime.TotalMilliseconds;
+            timesinceenemyspawn += gameTime.ElapsedGameTime.TotalMilliseconds;
+
+            updateifs();
             base.Update(gameTime);
         }
 
@@ -337,10 +341,11 @@ namespace moregameteststuff
         protected override void Draw(GameTime gameTime)
         {
             SpriteFont spriteFont = Content.Load<SpriteFont>("Arial");
-            GraphicsDevice.Clear(Color.CornflowerBlue);
             background.Draw(spriteBatch);
+            
             player.Draw(spriteBatch);
             hud.Draw(spriteFont, spriteBatch, player);
+
 
             foreach (enemy1bullet e1bullet in e1bulletlist)
             {
@@ -358,11 +363,19 @@ namespace moregameteststuff
                 }
             }
 
-            foreach (enemy1 enemy1 in enemy1list)
+            foreach (enemy1 enemydummy in enemy1list)
             {
                 for (int i = 0; i < enemy1list.Count; i++)
                 {
                     enemy1list[i].Draw(spriteBatch);
+                }
+            }
+
+            foreach (enemy1bullet enemy1bullet in e1bulletlist)
+            {
+                for (int i =0; i < e1bulletlist.Count; i++)
+                {
+                    e1bulletlist[i].move();
                 }
             }
 
@@ -401,4 +414,3 @@ namespace moregameteststuff
     * 
     */
 }
-
