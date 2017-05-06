@@ -79,9 +79,7 @@ namespace mgtsrw
             //background init
             background = new bgsprite(bgtex, Vector2.Zero);
             background.initbg(screenheightpass = Window.ClientBounds.Height, screenwidth = Window.ClientBounds.Width);
-
             
-
             //debug enemy
             enemylist.Add(new enemy(e1texture, Vector2.Zero, player));
         }
